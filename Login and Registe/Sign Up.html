@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h2 class="logo">MyApp</h2>
+            <nav class="nav">
+                <a href="index.html">Login</a>
+                <a href="signup.html" class="active">Sign Up</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="form-container">
+                <h1>Sign Up</h1>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <div class="inputForm">
+                            <input type="text" id="username" required>
+                            <span id="username-error" class="error-message"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <div class="inputForm">
+                            <input type="email" id="email" required>
+                            <span id="email-error" class="error-message"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="birthdate">Birthdate</label>
+                        <div class="inputForm">
+                            <input type="date" id="birthdate" required>
+                            <span id="birthdate-error" class="error-message"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="inputForm">
+                            <input type="password" id="password" required>
+                            <button type="button" class="toggle-password">👁</button>
+                            <span id="password-error" class="error-message"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password">Confirm Password</label>
+                        <div class="inputForm">
+                            <input type="password" id="confirm-password" required>
+                            <button type="button" class="toggle-password">👁</button>
+                            <span id="confirm-password-error" class="error-message"></span>
+                        </div>
+                    </div>
+                    <div id="success-message" class="message"></div>
+                    <button type="submit">Register</button>
+                </form>
+                <p>Already have an account? <a href="index.html">Login</a></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: support@myapp.com</p>
+                <p>Phone: +94 77 903 5940</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="#">About Us</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#">Twitter</a>
+                    <a href="#">Facebook</a>
+                    <a href="#">Instagram</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 MyApp. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="SignUp.js"></script>
+</body>
+</html>
