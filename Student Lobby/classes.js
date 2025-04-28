@@ -1,5 +1,5 @@
 // API URL
-const API_URL = 'http://localhost:5000';
+const API_URL = 'http://deka.pylex.software:11219/';
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', async () => {

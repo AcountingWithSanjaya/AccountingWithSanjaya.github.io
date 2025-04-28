@@ -33,3 +33,43 @@ stats.forEach(stat => {
 window.addEventListener('scroll', animateStats);
 // Trigger once on load
 animateStats();
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const returncustomer = localStorage.getItem('returncustomer');
+    
+    if (returncustomer) {
+        // Customer exists, send fetch to returnconsumer
+        try {
+            const response = await fetch('http://deka.pylex.software:11219/returnconsumer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ returncustomer: true }),
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    } else {
+        // Customer doesn't exist, create one and send fetch to newconsumer
+        localStorage.setItem('returncustomer', 'true');
+        try {
+            const response = await fetch('http://deka.pylex.software:11219/newconsumer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ newcustomer: true }),
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+});
