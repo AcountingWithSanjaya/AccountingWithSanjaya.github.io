@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Class Recordings Archive</title>
+    <link rel="stylesheet" href="./recordings.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-content">
+        <h1 class="logo">Class Recordings Archive</h1>
+        <nav class="nav">
+          <a href="#" class="active">Home</a>
+          <a href="#">About</a>
+          <a href="#">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="recordings-container">
+        <div class="filters-card">
+          <h2>Filter Recordings</h2>
+          <div class="filter-section">
+            <div class="form-group">
+              <label for="date-filter">Date</label>
+              <select id="date-filter" class="filter-select">
+                <option value="all">All Dates</option>
+              </select>
+            </div>
+            <button id="apply-filters" class="cta-button">Apply Filters</button>
+          </div>
+        </div>
+
+        <div class="recordings-list-card">
+          <h2>Available Recordings</h2>
+          <div id="recordings-container" class="recordings-grid">
+            <div class="loading-spinner" id="loading-spinner">
+              <div class="spinner"></div>
+              <p>Loading recordings...</p>
+            </div>
+          </div>
+          <div id="no-recordings" class="no-recordings hidden">
+            <p>No recordings found matching your criteria.</p>
+          </div>
+          <div id="error-message" class="error-message hidden">
+            <p>Unable to load recordings. Please try again later.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>About</h3>
+          <p>Access and download recorded class sessions to catch up on missed lessons.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <a href="#">Home</a>
+          <a href="#">About</a>
+          <a href="#">Contact</a>
+        </div>
+        <div class="footer-section">
+          <h3>Support</h3>
+          <a href="#">FAQ</a>
+          <a href="#">Help Center</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Class Recordings Archive. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <div id="download-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Downloading Recording</h2>
+        <div class="download-info">
+          <p id="download-filename">Preparing download...</p>
+          <div class="download-progress-container">
+            <div id="download-progress" class="download-progress"></div>
+          </div>
+        </div>
+        <div id="download-status" class="status-message"></div>
+      </div>
+    </div>
+
+    <script type="module" src="recordings.js"></script>
+  </body>
+</html>

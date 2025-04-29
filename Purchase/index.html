@@ -1,158 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Purchase Credits</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <header class="header">
-        <div class="header-content">
-            <h2 class="logo">Accounting World</h2>
-            <nav class="nav">
-                <a href="Login.html">Login</a>
-                <a href="Sign Up.html" class="active">Sign Up</a>
-            </nav>
-        </div>
-    </header>
+      <div class="header-content">
+          <div class="logo">Accounting World</div>
+          <nav class="nav">
+              <a href="../Student Lobby/Classes.html">My Classes</a>
+              <a href="./Student Lobby/Schedule.html">Schedule</a>
+              <a href="./Student Lobby/Profile.html">Profile</a>
+              <a href="../Support/Form.html">Support</a>
+          </nav>
+      </div>
+  </header>
 
     <main class="main-content">
-        <div class="credit-balance">
-            <h2>Current Balance: 0 Credits</h2>
+      <div class="credit-balance">
+        <h2>Current Balance: 0 Credits</h2>
+      </div>
+
+      <div class="credit-packages">
+        <h1>Choose Your Credit Package</h1>
+        <div class="packages-container">
+          <div class="package-card">
+            <div class="package-header">Starter</div>
+            <div class="package-price">$15</div>
+            <div class="package-credits">1 Credits</div>
+            <button
+              class="purchase-btn"
+              data-package="starter"
+              data-price="9.99"
+              data-credits="100"
+            >
+              Purchase Now
+            </button>
+          </div>
+
+          <div class="package-card featured">
+            <div class="popular-tag">Most Popular</div>
+            <div class="package-header">Premium</div>
+            <div class="package-price">$65</div>
+            <div class="package-credits">5 Credits</div>
+            <button
+              class="purchase-btn"
+              data-package="premium"
+              data-price="24.99"
+              data-credits="300"
+            >
+              Purchase Now
+            </button>
+          </div>
+
+          <div class="package-card">
+            <div class="package-header">Pro</div>
+            <div class="package-price">$125</div>
+            <div class="package-credits">10 Credits</div>
+            <button
+              class="purchase-btn"
+              data-package="pro"
+              data-price="49.99"
+              data-credits="700"
+            >
+              Purchase Now
+            </button>
+          </div>
+
+          <div class="package-card">
+            <div class="package-header">Pro</div>
+            <div class="package-price">$245</div>
+            <div class="package-credits">20 Credits</div>
+            <button
+              class="purchase-btn"
+              data-package="pro"
+              data-price="49.99"
+              data-credits="700"
+            >
+              Purchase Now
+            </button>
+          </div>
+
+          <div class="package-card">
+            <div class="package-header">Pro</div>
+            <div class="package-price">$600</div>
+            <div class="package-credits">50 Credits</div>
+            <button
+              class="purchase-btn"
+              data-package="pro"
+              data-price="49.99"
+              data-credits="700"
+            >
+              Purchase Now
+            </button>
+          </div>
+
+          <div class="package-card">
+            <div class="package-header">Pro</div>
+            <div class="package-price">$1100</div>
+            <div class="package-credits">100 Credits</div>
+            <button
+              class="purchase-btn"
+              data-package="pro"
+              data-price="49.99"
+              data-credits="700"
+            >
+              Purchase Now
+            </button>
+          </div>
         </div>
+      </div>
 
-        <div class="credit-packages">
-            <h1>Choose Your Credit Package</h1>
-            <div class="packages-container">
-                <div class="package-card">
-                    <div class="package-header">Starter</div>
-                    <div class="package-price">$15</div>
-                    <div class="package-credits">1 Credits</div>
-                    <button class="purchase-btn" data-package="starter" data-price="9.99" data-credits="100">
-                        Purchase Now
-                    </button>
-                </div>
-
-                <div class="package-card featured">
-                    <div class="popular-tag">Most Popular</div>
-                    <div class="package-header">Premium</div>
-                    <div class="package-price">$65</div>
-                    <div class="package-credits">5 Credits</div>
-                    <button class="purchase-btn" data-package="premium" data-price="24.99" data-credits="300">
-                        Purchase Now
-                    </button>
-                </div>
-
-                <div class="package-card">
-                    <div class="package-header">Pro</div>
-                    <div class="package-price">$125</div>
-                    <div class="package-credits">10 Credits</div>
-                    <button class="purchase-btn" data-package="pro" data-price="49.99" data-credits="700">
-                        Purchase Now
-                    </button>
-                </div>
-
-                <div class="package-card">
-                    <div class="package-header">Pro</div>
-                    <div class="package-price">$245</div>
-                    <div class="package-credits">20 Credits</div>
-                    <button class="purchase-btn" data-package="pro" data-price="49.99" data-credits="700">
-                        Purchase Now
-                    </button>
-                </div>
-
-
-                <div class="package-card">
-                    <div class="package-header">Pro</div>
-                    <div class="package-price">$600</div>
-                    <div class="package-credits">50 Credits</div>
-                    <button class="purchase-btn" data-package="pro" data-price="49.99" data-credits="700">
-                        Purchase Now
-                    </button>
-                </div>
-
-                <div class="package-card">
-                    <div class="package-header">Pro</div>
-                    <div class="package-price">$1100</div>
-                    <div class="package-credits">100 Credits</div>
-                    <button class="purchase-btn" data-package="pro" data-price="49.99" data-credits="700">
-                        Purchase Now
-                    </button>
-                </div>
+      <div id="purchaseModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h2>Complete Your Purchase</h2>
+          <div class="purchase-summary">
+            <div class="summary-item">
+              <span>Package:</span>
+              <span id="summaryPackage"></span>
             </div>
-        </div>
-
-        <div id="purchaseModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Complete Your Purchase</h2>
-                <div class="purchase-summary">
-                    <div class="summary-item">
-                        <span>Package:</span>
-                        <span id="summaryPackage"></span>
-                    </div>
-                    <div class="summary-item">
-                        <span>Credits:</span>
-                        <span id="summaryCredits"></span>
-                    </div>
-                    <div class="summary-item">
-                        <span>Total:</span>
-                        <span id="summaryPrice"></span>
-                    </div>
-                </div>
-                <form id="paymentForm">
-                    <div class="form-group">
-                        <label for="cardName">Cardholder Name</label>
-                        <input type="text" id="cardName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="cardNumber">Card Number</label>
-                        <input type="text" id="cardNumber" maxlength="19" required>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="expiryDate">Expiry Date</label>
-                            <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="cvv">CVV</label>
-                            <input type="text" id="cvv" maxlength="3" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="submit-btn">Complete Purchase</button>
-                </form>
+            <div class="summary-item">
+              <span>Credits:</span>
+              <span id="summaryCredits"></span>
             </div>
+            <div class="summary-item">
+              <span>Total:</span>
+              <span id="summaryPrice"></span>
+            </div>
+          </div>
+          <form id="paymentForm">
+            <div class="form-group">
+              <label for="cardName">Cardholder Name</label>
+              <input type="text" id="cardName" required />
+            </div>
+            <div class="form-group">
+              <label for="cardNumber">Card Number</label>
+              <input type="text" id="cardNumber" maxlength="19" required />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="expiryDate">Expiry Date</label>
+                <input
+                  type="text"
+                  id="expiryDate"
+                  placeholder="MM/YY"
+                  maxlength="5"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" maxlength="3" required />
+              </div>
+            </div>
+            <button type="submit" class="submit-btn">Complete Purchase</button>
+          </form>
         </div>
+      </div>
     </main>
 
     <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Contact Us</h3>
-                <p>Email: ssjayasundara@yahoo.com</p>
-                <p>Phone: +94 77 903 5940</p>
-            </div>
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <a href="#">Login</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-            </div>
-            <div class="footer-section">
-                <h3>Follow Us</h3>
-                <div class="social-links">
-                    <a href="#">Twitter</a>
-                    <a href="https://www.facebook.com/share/1BQyew99t2/">Facebook</a>
-                    <a href="https://www.instagram.com/sanjaya_jayasundara?igsh=M2lxb3l1enI2MTRx">Instagram</a>
-                </div>
-            </div>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <p>Email: ssjayasundara@yahoo.com</p>
+          <p>Phone: +94 77 903 5940</p>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 Accounting World. All rights reserved.</p>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <a href="#">Login</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
         </div>
+        <div class="footer-section">
+          <h3>Follow Us</h3>
+          <div class="social-links">
+            <a href="#">Twitter</a>
+            <a href="https://www.facebook.com/share/1BQyew99t2/">Facebook</a>
+            <a
+              href="https://www.instagram.com/sanjaya_jayasundara?igsh=M2lxb3l1enI2MTRx"
+              >Instagram</a
+            >
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 Accounting World. All rights reserved.</p>
+      </div>
     </footer>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
