@@ -1,4 +1,3 @@
-// Add smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -8,7 +7,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Add active class to current navigation item
 const currentLocation = window.location.pathname;
 document.querySelectorAll('.nav a').forEach(link => {
     if (link.getAttribute('href').includes(currentLocation)) {
@@ -16,7 +14,6 @@ document.querySelectorAll('.nav a').forEach(link => {
     }
 });
 
-// Animate feature cards on scroll
 const observerOptions = {
     threshold: 0.1
 };

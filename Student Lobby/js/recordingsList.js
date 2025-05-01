@@ -1,15 +1,7 @@
-/**
- * Module for fetching and displaying class recordings
- */
-
-// API endpoint for loading recordings
 const RECORDINGS_API_URL = 'http://deka.pylex.software:11219/loadrecordings';
 
-// Store for recordings data
 let allRecordings = [];
 let filteredRecordings = [];
-
-// DOM elements
 const recordingsContainer = document.getElementById('recordings-container');
 const loadingSpinner = document.getElementById('loading-spinner');
 const noResultsElement = document.getElementById('no-recordings');
@@ -19,8 +11,7 @@ const dateFilter = document.getElementById('date-filter');
 const applyFiltersButton = document.getElementById('apply-filters');
 
 /**
- * Fetch recordings from the API
- * @returns {Promise<Array>} Recordings data
+ * @returns {Promise<Array>} 
  */
 export async function fetchRecordings() {
   try {
@@ -42,11 +33,7 @@ export async function fetchRecordings() {
   }
 }
 
-/**
- * Initialize the recordings list and filters
- */
 export async function initRecordingsList() {
-  // Fetch recordings and populate the UI
   allRecordings = await fetchRecordings();
   filteredRecordings = [...allRecordings];
   
@@ -55,20 +42,16 @@ export async function initRecordingsList() {
     renderRecordings(allRecordings);
   }
   
-  // Set up event listeners
   applyFiltersButton.addEventListener('click', handleFilterApply);
 }
 
 /**
- * Populate filter dropdowns with available options
- * @param {Array} recordings Recordings data
+ * @param {Array} recordings
  */
 function populateFilters(recordings) {
-  // Extract unique subjects and dates
   const subjects = [...new Set(recordings.map(recording => recording.subject))].sort();
   const dates = [...new Set(recordings.map(recording => recording.date))].sort((a, b) => new Date(b) - new Date(a));
   
-  // Populate subject filter
   subjects.forEach(subject => {
     const option = document.createElement('option');
     option.value = subject;
@@ -76,7 +59,6 @@ function populateFilters(recordings) {
     subjectFilter.appendChild(option);
   });
   
-  // Populate date filter
   dates.forEach(date => {
     const option = document.createElement('option');
     option.value = date;
@@ -85,9 +67,6 @@ function populateFilters(recordings) {
   });
 }
 
-/**
- * Apply filters to the recordings list
- */
 function handleFilterApply() {
   const selectedSubject = subjectFilter.value;
   const selectedDate = dateFilter.value;
@@ -102,11 +81,9 @@ function handleFilterApply() {
 }
 
 /**
- * Render recordings to the UI
- * @param {Array} recordings Recordings to render
+ * @param {Array} recordings
  */
 function renderRecordings(recordings) {
-  // Clear the container first
   recordingsContainer.innerHTML = '';
   
   if (recordings.length === 0) {
@@ -116,7 +93,6 @@ function renderRecordings(recordings) {
   
   noResultsElement.classList.add('hidden');
   
-  // Create a card for each recording
   recordings.forEach(recording => {
     const recordingCard = createRecordingCard(recording);
     recordingsContainer.appendChild(recordingCard);
@@ -124,9 +100,8 @@ function renderRecordings(recordings) {
 }
 
 /**
- * Create a recording card element
- * @param {Object} recording Recording data
- * @returns {HTMLElement} Recording card element
+ * @param {Object} recording
+ * @returns {HTMLElement} 
  */
 function createRecordingCard(recording) {
   const card = document.createElement('div');
@@ -137,8 +112,7 @@ function createRecordingCard(recording) {
   
   const infoDiv = document.createElement('div');
   infoDiv.className = 'recording-info';
-  
-  // Create subject detail
+
   const subjectDetail = document.createElement('div');
   subjectDetail.className = 'recording-detail';
   
@@ -153,7 +127,6 @@ function createRecordingCard(recording) {
   subjectDetail.appendChild(subjectLabel);
   subjectDetail.appendChild(subjectValue);
   
-  // Create date detail
   const dateDetail = document.createElement('div');
   dateDetail.className = 'recording-detail';
   
@@ -168,7 +141,6 @@ function createRecordingCard(recording) {
   dateDetail.appendChild(dateLabel);
   dateDetail.appendChild(dateValue);
   
-  // Add duration detail if available
   if (recording.duration) {
     const durationDetail = document.createElement('div');
     durationDetail.className = 'recording-detail';
@@ -186,22 +158,18 @@ function createRecordingCard(recording) {
     infoDiv.appendChild(durationDetail);
   }
   
-  // Create download button
   const downloadButton = document.createElement('button');
   downloadButton.className = 'download-button';
   downloadButton.textContent = 'Download Recording';
   downloadButton.addEventListener('click', () => {
-    // Import downloadManager dynamically to avoid circular dependencies
     import('./downloadManager.js').then(module => {
       module.downloadRecording(recording);
     });
   });
   
-  // Add info to the card
   infoDiv.appendChild(subjectDetail);
   infoDiv.appendChild(dateDetail);
   
-  // Assemble the card
   card.appendChild(title);
   card.appendChild(infoDiv);
   card.appendChild(downloadButton);
@@ -210,8 +178,7 @@ function createRecordingCard(recording) {
 }
 
 /**
- * Show or hide loading spinner
- * @param {boolean} show Whether to show loading spinner
+ * @param {boolean} show 
  */
 function showLoading(show) {
   if (show) {
@@ -224,24 +191,21 @@ function showLoading(show) {
 }
 
 /**
- * Show or hide error message
- * @param {boolean} show Whether to show error message
+ * @param {boolean} show 
  */
 function showError(show) {
   errorMessageElement.classList.toggle('hidden', !show);
 }
 
 /**
- * Get all recordings data
- * @returns {Array} All recordings
+ * @returns {Array} 
  */
 export function getAllRecordings() {
   return allRecordings;
 }
 
 /**
- * Get filtered recordings data
- * @returns {Array} Filtered recordings
+ * @returns {Array} 
  */
 export function getFilteredRecordings() {
   return filteredRecordings;

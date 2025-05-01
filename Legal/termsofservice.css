@@ -38,7 +38,6 @@ body {
   flex-direction: column;
 }
 
-/* Header Styles - As specified, keeping the same */
 .header {
   background-color: var(--white);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -114,7 +113,6 @@ body {
   background-color: var(--blue-100);
 }
 
-/* Main Content Styles */
 .main-content {
   flex: 1;
   padding: 80px 20px 40px;
@@ -190,7 +188,6 @@ section h2 {
   padding-bottom: 5px;
 }
 
-/* Footer Styles - As specified, keeping the same */
 .footer {
   background-color: var(--white);
   padding: 3rem 0 1rem;
@@ -239,7 +236,6 @@ section h2 {
   border-top: 1px solid var(--grey-200);
 }
 
-/* Popup Styles */
 .popup {
   display: none;
   position: fixed;
@@ -336,7 +332,6 @@ section h2 {
   backdrop-filter: blur(2px);
 }
 
-/* Improved Button Styles */
 .button {
   position: relative;
   width: 160px;
@@ -404,7 +399,6 @@ section h2 {
   background-color: var(--blue-700);
 }
 
-/* Card Styles */
 .card {
   background-color: var(--white);
   border-radius: 8px;
@@ -430,7 +424,6 @@ section h2 {
   color: var(--grey-600);
 }
 
-/* Form Styles */
 .form-group {
   margin-bottom: 20px;
 }
@@ -457,7 +450,6 @@ section h2 {
   box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   main,
   .main-content {

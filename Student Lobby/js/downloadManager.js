@@ -1,29 +1,20 @@
-/**
- * Module for handling recording downloads
- */
-
-// API endpoint for downloading files
 const FILE_API_URL = 'http://deka.pylex.software:11219/File/';
 
-// DOM elements
 const downloadModal = document.getElementById('download-modal');
 const closeModalButton = document.querySelector('.close-modal');
 const downloadFilename = document.getElementById('download-filename');
 const downloadProgress = document.getElementById('download-progress');
 const downloadStatus = document.getElementById('download-status');
 
-// Initialize event listeners
 function initDownloadManager() {
   closeModalButton.addEventListener('click', hideModal);
   
-  // Click outside to close
   window.addEventListener('click', (e) => {
     if (e.target === downloadModal) {
       hideModal();
     }
   });
-  
-  // Escape key to close
+
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && downloadModal.classList.contains('show')) {
       hideModal();
@@ -32,8 +23,7 @@ function initDownloadManager() {
 }
 
 /**
- * Download a recording
- * @param {Object} recording Recording to download
+ * @param {Object} recording 
  */
 export async function downloadRecording(recording) {
   if (!recording || !recording.filename) {
@@ -48,22 +38,18 @@ export async function downloadRecording(recording) {
   try {
     const url = `${FILE_API_URL}${encodeURIComponent(recording.filename)}`;
     
-    // Fetch file with progress tracking
     const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error(`Error downloading file: ${response.status}`);
     }
     
-    // Get content length for progress calculation, if available
     const contentLength = response.headers.get('Content-Length');
     const total = contentLength ? parseInt(contentLength, 10) : 0;
     let loaded = 0;
     
-    // Create a reader from the response body
     const reader = response.body.getReader();
     
-    // Read the data chunks
     const chunks = [];
     let receivedLength = 0;
     
@@ -77,18 +63,16 @@ export async function downloadRecording(recording) {
       chunks.push(value);
       receivedLength += value.length;
       
-      // Update progress
+    
       if (total) {
         loaded += value.length;
         const percent = Math.round((loaded / total) * 100);
         updateProgress(percent);
       } else {
-        // If content length is unknown, show indefinite progress
         updateProgress(-1);
       }
     }
     
-    // Combine chunks into a single Uint8Array
     const chunksAll = new Uint8Array(receivedLength);
     let position = 0;
     for (const chunk of chunks) {
@@ -96,10 +80,8 @@ export async function downloadRecording(recording) {
       position += chunk.length;
     }
     
-    // Convert the Uint8Array to Blob
     const blob = new Blob([chunksAll], { type: 'video/mp4' });
     
-    // Create download link
     const downloadUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = downloadUrl;
@@ -107,15 +89,12 @@ export async function downloadRecording(recording) {
     document.body.appendChild(a);
     a.click();
     
-    // Clean up
     window.URL.revokeObjectURL(downloadUrl);
     document.body.removeChild(a);
     
-    // Show success message
     updateProgress(100);
     showSuccess('Download complete! The recording should begin downloading automatically.');
     
-    // Close modal after a short delay
     setTimeout(() => {
       hideModal();
     }, 3000);
@@ -126,23 +105,16 @@ export async function downloadRecording(recording) {
   }
 }
 
-/**
- * Show the download modal
- */
+
 function showModal() {
   downloadModal.classList.add('show');
 }
 
-/**
- * Hide the download modal
- */
+
 function hideModal() {
   downloadModal.classList.remove('show');
 }
 
-/**
- * Reset modal state
- */
 function resetModalState() {
   downloadProgress.style.width = '0%';
   downloadStatus.className = 'status-message';
@@ -151,12 +123,10 @@ function resetModalState() {
 }
 
 /**
- * Update progress bar
- * @param {number} percent Progress percentage (-1 for indeterminate)
+ * @param {number} percent 
  */
 function updateProgress(percent) {
   if (percent < 0) {
-    // Indeterminate progress
     downloadProgress.style.width = '100%';
     downloadProgress.style.animation = 'indeterminate 1.5s infinite linear';
   } else {
@@ -166,8 +136,7 @@ function updateProgress(percent) {
 }
 
 /**
- * Show success message
- * @param {string} message Success message
+ * @param {string} message 
  */
 function showSuccess(message) {
   downloadStatus.classList.remove('hidden', 'error');
@@ -176,8 +145,7 @@ function showSuccess(message) {
 }
 
 /**
- * Show error message
- * @param {string} message Error message
+ * @param {string} message 
  */
 function showError(message) {
   downloadStatus.classList.remove('hidden', 'success');
@@ -185,7 +153,6 @@ function showError(message) {
   downloadStatus.textContent = message;
 }
 
-// Initialize download manager
 document.addEventListener('DOMContentLoaded', initDownloadManager);
 
 export default {

@@ -1,9 +1,6 @@
-// API URL
 const API_URL = 'http://deka.pylex.software:11219/';
 
-// Initialize the page
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check authentication
     const token = localStorage.getItem('authToken');
     const userEmail = localStorage.getItem('userEmail');
 
@@ -28,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             throw new Error('Not authenticated');
         }
 
-        // Fetch user credits and classes
         await Promise.all([fetchUserCredits(), fetchClasses()]);
     } catch (error) {
         console.error('Authentication error:', error);
@@ -36,7 +32,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Fetch user credits
 async function fetchUserCredits() {
     try {
         const email = localStorage.getItem('userEmail');
@@ -59,13 +54,11 @@ async function fetchUserCredits() {
     }
 }
 
-// Update credits display
 function updateCreditsDisplay(credits) {
     const creditsCount = document.querySelector('.credits-count');
     creditsCount.textContent = credits;
 }
 
-// Fetch classes from the backend
 async function fetchClasses() {
     try {
         const response = await fetch(`${API_URL}/api/classes`);
@@ -86,7 +79,6 @@ async function fetchClasses() {
     }
 }
 
-// Check enrolled classes and update UI
 async function checkEnrolledClasses() {
     try {
         const email = localStorage.getItem('userEmail');
@@ -113,7 +105,6 @@ async function checkEnrolledClasses() {
     }
 }
 
-// Update class card with zoom link
 function updateClassCardWithZoomLink(card, zoomLink) {
     card.classList.add('enrolled');
     const zoomLinkElement = document.createElement('div');
@@ -124,7 +115,6 @@ function updateClassCardWithZoomLink(card, zoomLink) {
     card.appendChild(zoomLinkElement);
 }
 
-// Render all available classes
 function renderClasses(classes) {
     const classList = document.getElementById('classList');
     classList.innerHTML = '';
@@ -151,17 +141,12 @@ function renderClasses(classes) {
     });
 }
 
-// Handle class selection
 function selectClass(classItem) {
-    // Remove selection from all cards
     document.querySelectorAll('.class-card').forEach(card => {
         card.classList.remove('selected');
     });
 
-    // Add selection to clicked card
     event.currentTarget.classList.add('selected');
-
-    // Update selected class display
     const selectedClassDiv = document.getElementById('selectedClass');
     selectedClassDiv.innerHTML = `
         <h2>Selected Class</h2>
@@ -194,7 +179,6 @@ function selectClass(classItem) {
     `;
 }
 
-// Handle joining a class
 async function joinClass(classId) {
     try {
         const email = localStorage.getItem('userEmail');
@@ -218,10 +202,8 @@ async function joinClass(classId) {
             throw new Error(data.error || 'Failed to join class');
         }
         
-        // Update credits display
         updateCreditsDisplay(data.remaining_credits);
-        
-        // Update class card with zoom link
+    
         const classCard = document.querySelector(`.class-card[data-class-id="${classId}"]`);
         updateClassCardWithZoomLink(classCard, data.zoom_link);
         

@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.querySelector('.close');
     const paymentForm = document.getElementById('paymentForm');
 
-    // Open modal with package details
     purchaseButtons.forEach(button => {
         button.addEventListener('click', () => {
             const package = button.dataset.package;
@@ -19,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Close modal
     closeBtn.addEventListener('click', () => {
         modal.style.display = 'none';
     });
@@ -30,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Card number formatting
     const cardNumber = document.getElementById('cardNumber');
     cardNumber.addEventListener('input', (e) => {
         let value = e.target.value.replace(/\D/g, '');
@@ -44,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.value = formattedValue;
     });
 
-    // Expiry date formatting
     const expiryDate = document.getElementById('expiryDate');
     expiryDate.addEventListener('input', (e) => {
         let value = e.target.value.replace(/\D/g, '');
@@ -54,17 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.value = value;
     });
 
-    // CVV formatting
     const cvv = document.getElementById('cvv');
     cvv.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/\D/g, '');
     });
 
-    // Form submission
     paymentForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        // Simulate payment processing
         const submitBtn = e.target.querySelector('.submit-btn');
         submitBtn.disabled = true;
         submitBtn.textContent = 'Processing...';
@@ -78,3 +71,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500);
     });
 });
+

@@ -1,4 +1,4 @@
-/* Theme Colors */
+
 :root {
   --white: #ffffff;
   --light-blue: #e3f2fd;
@@ -19,7 +19,6 @@
   --accent-teal: #009688;
 }
 
-/* Base Styles */
 * {
   margin: 0;
   padding: 0;
@@ -36,7 +35,6 @@ body {
   flex-direction: column;
 }
 
-/* Header Styles */
 .header {
   background-color: var(--white);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -56,16 +54,10 @@ body {
   justify-content: space-between;
   align-items: center;
 }
-
 .logo {
-  color: var(--blue-500);
+  color: var(--black);
   font-size: 1.5rem;
   font-weight: bold;
-  transition: color 0.3s ease;
-}
-
-.logo:hover {
-  color: var(--blue-400);
 }
 
 .nav {
@@ -90,7 +82,6 @@ body {
   box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
 }
 
-/* Main Content Styles */
 .main-content {
   flex: 1;
   padding: 100px 20px 40px;
@@ -99,7 +90,6 @@ body {
   width: 100%;
 }
 
-/* Papers Container Styles */
 .papers-container {
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -286,7 +276,6 @@ body {
   border-left: 3px solid var(--error-red);
 }
 
-/* Modal Styles */
 .modal {
   display: none;
   position: fixed;
@@ -389,12 +378,10 @@ body {
   border-left: 3px solid var(--error-red);
 }
 
-/* Hidden utility class */
 .hidden {
   display: none !important;
 }
 
-/* Footer Styles */
 .footer {
   background-color: var(--white);
   padding: 3rem 0 1rem;
@@ -455,7 +442,6 @@ body {
   color: var(--grey-500);
 }
 
-/* Media Queries */
 @media (max-width: 768px) {
   .papers-container {
     grid-template-columns: 1fr;

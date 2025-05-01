@@ -5,117 +5,255 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mr. Sanjaya - Accounting World</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
 </head>
 <body>
-    <div class="min-h-screen">
-        <!-- Hero Section -->
-        <div class="hero">
-            <div class="hero-overlay"></div>
-            <div class="hero-content container">
-                <div class="hero-text">
-                    <h1>Sanjaya Sudesh Jayasundara
-                    </h1>
-                    <p class="subtitle">Dedicated Accounting Educator with 12+ Years Experience</p>
-                    <div class="button-group">
-                        <a href=""><button class="btn btn-primary">Contact Me</button></a>
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <a href="#">
+                        <span class="logo-text">Accounting</span>
+                        <span class="logo-highlight">World</span>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#home" class="active">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#experience">Experience</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+                <button class="mobile-menu-btn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="hero-section">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h5 class="pre-title">Welcome to Accounting World</h5>
+                        <h1 class="hero-title">Sanjaya Sudesh Jayasundara</h1>
+                        <p class="hero-subtitle">Dedicated Accounting Educator with 12+ Years Experience</p>
+                        <div class="hero-actions">
+                            <a href="#contact" class="btn btn-primary">Get in Touch</a>
+                            <a href="#about" class="btn btn-outline">Learn More</a>
+                        </div>
+                    </div>
+                    <div class="hero-image">
+                        <div class="image-container">
+                            <img src="https://images.pexels.com/photos/5905700/pexels-photo-5905700.jpeg" alt="Sanjaya Jayasundara">
+                        </div>
+                        <div class="experience-badge">
+                            <span class="number">12+</span>
+                            <span class="text">Years Teaching</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Main Content -->
-        <div class="container main-content">
-            <div class="profile-grid">
-                <!-- Profile Image -->
-                <div class="profile-image-container">
-                    <img src="Sir Sanjaya2.jpg"
-                         alt="Sanjaya" 
-                         class="profile-image">
-                    <div class="experience-badge">
-                        <p class="number">12+</p>
-                        <p class="label">Years Teaching</p>
-                    </div>
-                </div>
-
-                <!-- Profile Info -->
-                <div class="profile-info">
+        <section id="about" class="about-section">
+            <div class="container">
+                <div class="section-header">
                     <h2>About Me</h2>
-                    <p class="about-text">
-                        With a deep passion for accounting and finance, I have been dedicated to teaching since 2007, when I began tutoring students during my first year at university. Over the years, I have developed a strong ability to simplify complex accounting concepts, helping students excel in their studies and build a solid foundation for future careers. With extensive experience in Cambridge and Edexcel accounting curricula, I am committed to equipping students with both theoretical knowledge and practical applications. My goal is to inspire confidence in accounting and finance, making learning engaging, accessible, and results-driven.
-                    </p>
-                    <p>
-                        My professional journey includes experience as an Investment Advisor (2010 - 2012), where I gained valuable industry insights that enhance my teaching approach. My career in education spans multiple esteemed institutions, including: 
-                    </p>
-                    <p>
-                        -
-                    </p>
-                    <p>
-                        Gateway College, Negombo, Sri Lanka (2013 - 2018)
-                    </p>
-                    <p>
-                        Lyceum International School, Sri Lanka (2019 - 2022)
-                    </p>
-                    <p>
-                        Brightway International School, Maldives (2022 - 2024)
-                    </p>
-                    <p>
-                        Gateway College, Dehiwala (2024 - Present)
-                    </p>
-                    </p>
+                    <div class="section-divider"></div>
                 </div>
-                    <!-- Stats Grid -->
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <i class="icon users"></i>
-                            <div class="stat-content">
-                                <p class="stat-number">2,000+</p>
-                                <p class="stat-label">Students Taught</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <i class="icon book"></i>
-                            <div class="stat-content">
-                                <p class="stat-number">4</p>
-                                <p class="stat-label">Schools Taught</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <i class="icon calculator"></i>
-                            <div class="stat-content">
-                                <p class="stat-number">12+</p>
-                                <p class="stat-label">Years in Industry</p>
-                            </div>
-                        </div>
+                <div class="about-content">
+                    <div class="about-image">
+                        <!-- Replace with actual image path -->
+                        <img src="Sir Sanjaya2.jpg" alt="Sanjaya Teaching">
                     </div>
-
-                    <!-- Contact Info -->
-                    <div class="contact-info">
-                        <div class="contact-item">
-                            <i class="icon mail"></i>
-                            <span>ssjayasundara@yahoo.com</span>
-                        </div>
-                        <div class="contact-item">
-                            <i class="icon phone"></i>
-                            <span>+94 77 903 5940</span>
-                        </div>
-                        <div class="contact-item">
-                            <i class="icon instagram"></i>
-                            <span>@sanjaya_jayasundara</span>
-                        </div>
-                        <div class="contact-item">
-                            <i class="icon facebook"></i>
-                            <span>Sanjaya Jayasundara - Accounting </span>
+                    <div class="about-text">
+                        <p>With a deep passion for accounting and finance, I have been dedicated to teaching since 2007, when I began tutoring students during my first year at university. Over the years, I have developed a strong ability to simplify complex accounting concepts, helping students excel in their studies and build a solid foundation for future careers.</p>
+                        
+                        <p>With extensive experience in Cambridge and Edexcel accounting curricula, I am committed to equipping students with both theoretical knowledge and practical applications. My goal is to inspire confidence in accounting and finance, making learning engaging, accessible, and results-driven.</p>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon students-icon"></div>
+                                <div class="stat-info">
+                                    <h3>2,000+</h3>
+                                    <p>Students Taught</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon schools-icon"></div>
+                                <div class="stat-info">
+                                    <h3>4</h3>
+                                    <p>Schools Taught</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon experience-icon"></div>
+                                <div class="stat-info">
+                                    <h3>12+</h3>
+                                    <p>Years in Education</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon award-icon"></div>
+                                <div class="stat-info">
+                                    <h3>Excellence</h3>
+                                    <p>In Teaching</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <footer>
-        <div class="footer-bottom">
-            <p>&copy; 2024 Accounting World. All rights reserved.</p>
+        </section>
+
+        <section id="experience" class="experience-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Professional Journey</h2>
+                    <div class="section-divider"></div>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">2022 - Present</div>
+                            <h3>Gateway College, Dehiwala</h3>
+                            <p>Head of Accounting Department</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">2022 - 2024</div>
+                            <h3>Brightway International School, Maldives</h3>
+                            <p>Senior Accounting Lecturer</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">2019 - 2022</div>
+                            <h3>Lyceum International School, Sri Lanka</h3>
+                            <p>Accounting Educator</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">2013 - 2018</div>
+                            <h3>Gateway College, Negombo, Sri Lanka</h3>
+                            <p>Accounting Teacher</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">2010 - 2012</div>
+                            <h3>Investment Advisor</h3>
+                            <p>Finance Industry Experience</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+
+        <section id="contact" class="contact-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Get In Touch</h2>
+                    <div class="section-divider"></div>
+                </div>
+                <div class="contact-content">
+                    <div class="contact-info">
+                        <div class="contact-card">
+                            <div class="contact-icon email-icon"></div>
+                            <div class="contact-details">
+                                <h3>Email</h3>
+                                <p>ssjayasundara@yahoo.com</p>
+                            </div>
+                        </div>
+                        <div class="contact-card">
+                            <div class="contact-icon phone-icon"></div>
+                            <div class="contact-details">
+                                <h3>Phone</h3>
+                                <p>+94 77 903 5940</p>
+                            </div>
+                        </div>
+                        <div class="contact-card">
+                            <div class="contact-icon instagram-icon"></div>
+                            <div class="contact-details">
+                                <h3>Instagram</h3>
+                                <p>@sanjaya_jayasundara</p>
+                            </div>
+                        </div>
+                        <div class="contact-card">
+                            <div class="contact-icon facebook-icon"></div>
+                            <div class="contact-details">
+                                <h3>Facebook</h3>
+                                <p>Sanjaya Jayasundara - Accounting</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="contact-form-container">
+                        <form class="contact-form">
+                            <div class="form-group">
+                                <label for="name">Your Name</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Your Email</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Message</label>
+                                <textarea id="message" name="message" rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span class="logo-text">Accounting</span>
+                        <span class="logo-highlight">World</span>
+                    </div>
+                    <p>Dedicated to making accounting accessible and engaging for all students.</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#experience">Experience</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h3>Connect</h3>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon facebook"></a>
+                        <a href="#" class="social-icon instagram"></a>
+                        <a href="#" class="social-icon email"></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Accounting World. All rights reserved.</p>
+            </div>
         </div>
     </footer>
-    <script src="script.js"></script>
+
+    <script src="src/js/main.js"></script>
 </body>
 </html>

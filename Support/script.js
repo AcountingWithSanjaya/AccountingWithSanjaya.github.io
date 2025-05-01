@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('supportForm');
     const statusMessage = document.getElementById('status-message');
-
-    // Pre-fill email if user is logged in
     const userEmail = localStorage.getItem('userEmail');
+    
     if (userEmail) {
         document.getElementById('email').value = userEmail;
     }
@@ -11,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', async function(event) {
         event.preventDefault();
 
-        // Clear previous status
         statusMessage.style.display = 'none';
         statusMessage.className = 'status-message';
 

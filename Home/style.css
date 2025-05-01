@@ -34,7 +34,6 @@ body {
   flex-direction: column;
 }
 
-/* Header Styles - As specified, keeping the same */
 .header {
   background-color: var(--white);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -79,7 +78,6 @@ body {
   transform: translateY(-2px);
 }
 
-/* Main Content Styles */
 .main-content {
   flex: 1;
   padding: 80px 20px 40px;
@@ -161,7 +159,6 @@ body {
   box-shadow: 0 6px 16px rgba(33, 150, 243, 0.4);
 }
 
-/* Section Styles */
 .about-section,
 .teacher-section,
 .video-section,
@@ -202,7 +199,6 @@ h2::after {
   border-radius: 2px;
 }
 
-/* Teacher Section */
 .teacher-content {
   display: flex;
   gap: 3rem;
@@ -237,7 +233,6 @@ h2::after {
   margin-bottom: 1.5rem;
 }
 
-/* Video Section */
 .video-container {
   position: relative;
   padding-bottom: 56.25%;
@@ -257,7 +252,6 @@ h2::after {
   border-radius: 12px;
 }
 
-/* Papers Grid */
 .papers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -301,7 +295,6 @@ h2::after {
   box-shadow: 0 6px 16px rgba(33, 150, 243, 0.4);
 }
 
-/* Features Section */
 .features-section {
   margin: 4rem auto;
 }
@@ -332,7 +325,6 @@ h2::after {
   margin-bottom: 1.5rem;
 }
 
-/* Partners Section */
 .partners-section {
   text-align: center;
   margin: 4rem auto;
@@ -357,7 +349,6 @@ h2::after {
   transform: scale(1.05);
 }
 
-/* Footer Styles - As specified, keeping the same */
 .footer {
   background-color: var(--white);
   padding: 3rem 0 1rem;
@@ -406,7 +397,6 @@ h2::after {
   border-top: 1px solid var(--grey-200);
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   main,
   .main-content {

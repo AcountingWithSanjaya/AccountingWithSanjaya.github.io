@@ -43,9 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    // Initial fetch
     fetchClasses();
-
-    // Refresh every minute
     setInterval(fetchClasses, 60000);
 });

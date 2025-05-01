@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", async function () {
-  // Check if user is logged in
   const token = localStorage.getItem("authToken");
   const userEmail = localStorage.getItem("userEmail");
 
@@ -23,7 +22,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         window.location.href = "../User/Profile.html";
         return;
       } else {
-        // If token is invalid, clear storage
         localStorage.removeItem("authToken");
         localStorage.removeItem("userEmail");
       }
@@ -54,7 +52,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    // Clear all error messages
     usernameError.textContent = "";
     emailError.textContent = "";
     birthdateError.textContent = "";

@@ -1,4 +1,4 @@
-/* Theme Colors */
+
 :root {
   --white: #ffffff;
   --light-blue: #e3f2fd;
@@ -19,7 +19,6 @@
   --accent-teal: #009688;
 }
 
-/* Base Styles */
 * {
   margin: 0;
   padding: 0;
@@ -36,7 +35,6 @@ body {
   flex-direction: column;
 }
 
-/* Header Styles */
 .header {
   background-color: var(--white);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -90,7 +88,6 @@ body {
   box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
 }
 
-/* Main Content Styles */
 .main-content {
   flex: 1;
   padding: 100px 20px 40px;
@@ -99,7 +96,6 @@ body {
   width: 100%;
 }
 
-/* Dashboard Grid Styles */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -319,7 +315,6 @@ body {
   cursor: not-allowed;
 }
 
-/* Support Form Styles */
 .support-container {
   max-width: 800px;
   margin: 0 auto;
@@ -416,8 +411,6 @@ body {
   color: var(--error-red);
   border-left: 3px solid var(--error-red);
 }
-
-/* Footer Styles */
 .footer {
   background-color: var(--white);
   padding: 3rem 0 1rem;
@@ -501,7 +494,6 @@ body {
   color: var(--grey-500);
 }
 
-/* Media Queries */
 @media (max-width: 768px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
