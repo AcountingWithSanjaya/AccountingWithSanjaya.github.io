@@ -1,4 +1,4 @@
-const FILE_API_URL = 'http://deka.pylex.software:11219/File/';
+const FILE_API_URL = 'http://helya.pylex.xyz:10209/File/';
 
 const downloadModal = document.getElementById('download-modal');
 const closeModalButton = document.querySelector('.close-modal');

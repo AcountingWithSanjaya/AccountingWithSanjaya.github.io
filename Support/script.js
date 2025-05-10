@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         try {
-            const response = await fetch('http://deka.pylex.software:11219/SupportForm', {
+            const response = await fetch('http://helya.pylex.xyz:10209/SupportForm', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

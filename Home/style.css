@@ -51,12 +51,34 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+}
+
+/* Updated home icon positioning */
+.login-signup {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.home-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.home-icon:hover {
+  transform: scale(1.1);
 }
 
 .logo {
   color: var(--black);
   font-size: 1.5rem;
   font-weight: bold;
+  margin: 0 auto;
 }
 
 .nav {
@@ -415,6 +437,13 @@ h2::after {
     text-align: center;
   }
 
+  .login-signup {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    transform: none;
+  }
+
   .nav {
     flex-direction: row;
     justify-content: center;
@@ -465,6 +494,11 @@ h2::after {
 
   .nav a {
     padding: 0.5rem;
+  }
+
+  .login-signup {
+    left: 10px;
+    top: 10px;
   }
 
   .hero-text h1 {

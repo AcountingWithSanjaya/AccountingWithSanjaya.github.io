@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile | ProfileHub</title>
+    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p class="loading-text">Loading Profile...</p>
+            <p class="loading-subtext">Please wait while we fetch your information</p>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">ProfileHub</div>
+            <nav class="nav">
+                <a href="#" class="active">Home</a>
+                <a href="#">Dashboard</a>
+                <a href="#">Settings</a>
+                <a href="#">Help</a>
+            </nav>
+            <div class="user-menu">
+                <button class="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <button class="profile-button">
+                    <img src="https://images.pexels.com/photos/2269872/pexels-photo-2269872.jpeg?auto=compress&cs=tinysrgb&w=40" alt="Profile" class="profile-pic">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="profile-grid">
+                <div class="profile-sidebar">
+                    <div class="profile-header">
+                        <img src="https://images.pexels.com/photos/2269872/pexels-photo-2269872.jpeg?auto=compress&cs=tinysrgb&w=150" alt="Profile Picture" class="profile-image">
+                        <h2 class="profile-name">John Doe</h2>
+                        <p class="profile-status">Premium Member</p>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-star"></i>
+                            <span>Premium</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Member since 2023</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Verified Account</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-container">
+                    <h1>Profile Information</h1>
+                    
+                    <div class="form-group">
+                        <label for="username">
+                            <i class="fas fa-user"></i>
+                            Username
+                        </label>
+                        <input type="text" id="username" value="johndoe" readonly class="bg-gray-50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            Email
+                        </label>
+                        <input type="email" id="email" value="john.doe@example.com" readonly class="bg-gray-50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="fas fa-lock"></i>
+                            Password
+                        </label>
+                        <div class="inputForm">
+                            <input type="password" id="password" value="********" readonly class="bg-gray-50">
+                            <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <button type="button" class="change-password-btn">
+                            Change Password
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="birthdate">
+                            <i class="fas fa-birthday-cake"></i>
+                            Birthdate
+                        </label>
+                        <input type="text" id="birthdate" value="May 15, 1990" readonly class="bg-gray-50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="credits">
+                            <i class="fas fa-coins"></i>
+                            Credits
+                        </label>
+                        <input type="text" id="credits" value="2,500 credits" readonly class="bg-gray-50">
+                        <div class="credits-info">
+                            <div class="credit-history">
+                                <span class="trend positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    +500 this month
+                                </span>
+                            </div>
+                            <button class="buy-credits-btn">
+                                Buy More Credits
+                                <i class="fas fa-plus-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="submit" class="primary-button">
+                            <i class="fas fa-edit"></i>
+                            Edit Profile
+                        </button>
+                        <button type="button" class="secondary-button">
+                            <i class="fas fa-download"></i>
+                            Export Data
+                        </button>
+                    </div>
+                </div>
+
+                <div class="profile-activity">
+                    <h3>Recent Activity</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About Us</h3>
+                <a href="#">Our Story</a>
+                <a href="#">Team</a>
+                <a href="#">Careers</a>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <a href="#">Help Center</a>
+                <a href="#">Contact Us</a>
+                <a href="#">FAQs</a>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+            <div class="footer-section">
+                <h3>Connect</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ProfileHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="profile.js"></script>
+</body>
+</html>

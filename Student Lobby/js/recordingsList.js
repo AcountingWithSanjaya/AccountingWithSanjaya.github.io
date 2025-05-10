@@ -1,4 +1,4 @@
-const RECORDINGS_API_URL = 'http://deka.pylex.software:11219/loadrecordings';
+const RECORDINGS_API_URL = 'http://helya.pylex.xyz:10209/loadrecordings';
 
 let allRecordings = [];
 let filteredRecordings = [];

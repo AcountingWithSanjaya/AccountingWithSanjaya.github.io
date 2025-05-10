@@ -10,6 +10,7 @@ from discord.ext import commands
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 load_dotenv()
@@ -18,7 +19,7 @@ intents.messages = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 
-SIGNUP_CHANNEL_ID = 1333091359405379746
+SIGNUP_CHANNEL_ID = 1302608005744955443
 USERS_FILE = 'users.json'
 SESSIONS_FILE = 'sessions.json'
 MUSIC_FILE = 'music.json'
@@ -162,14 +163,12 @@ def join_class():
     if user['credits'] <= 0:
         return jsonify({"error": "Insufficient credits"}), 400
         
-    # Check if class is already enrolled
     if class_id in user['enrolled_classes']:
         return jsonify({
             "message": "Already enrolled",
             "zoom_link": class_info['zoom_link']
         })
         
-    # Update user credits and enrolled classes
     user['credits'] -= 1
     user['enrolled_classes'].append(class_id)
     save_users(users_data)
@@ -201,12 +200,12 @@ def get_zoom_link():
     if class_id not in user['enrolled_classes']:
         return jsonify({"error": "Not enrolled in this class"}), 403
         
-    # Check if class has expired
     class_datetime = datetime.strptime(f"{class_info['date']} {class_info['time']}", "%Y-%m-%d %I:%M %p")
     if datetime.now() > class_datetime + timedelta(hours=1, minutes=30):
         return jsonify({"error": "Class has expired"}), 410
         
     return jsonify({"zoom_link": class_info['zoom_link']})
+
 
 
 
@@ -241,7 +240,9 @@ def submit_form():
             "birthdate": birthdate,
             "password": hashed_password,
             "boughtMusic": [],
-            "publishedMusic": []
+            "publishedMusic": [],
+            "credit": 0,
+            "createdAt": datetime.utcnow().isoformat()
         }
 
         save_json(USERS_FILE, users)
@@ -254,6 +255,7 @@ def submit_form():
         print(f"Error during registration: {e}")
         send_embed_to_discord("Registration Error", f"Error occurred while processing registration: {e}")
         return jsonify({"message": "An error occurred during registration"}), 500
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -458,11 +460,11 @@ async def on_message(message):
     await bot.process_commands(message)
 
 def run_bot():
-    bot.run(os.getenv('DISCORD_TOKEN'))
+    bot.run(os.getenv('TOKEN'))
 
 if __name__ == '__main__':
     import threading
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     run_discord_bot()
-    app.run(host='0.0.0.0', port=11219)
+    app.run(host='0.0.0.0', port=10209)

@@ -197,7 +197,7 @@ function handleCustomerTracking() {
     localStorage.setItem('returncustomer', 'true');
   }
 
-  fetch(`http://deka.pylex.software:11219/${url}`, {
+  fetch(`http://helya.pylex.xyz:10209/${url}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ [url === 'returnconsumer' ? 'returncustomer' : 'newcustomer']: true })
@@ -277,7 +277,7 @@ function initSupportForm() {
     };
 
     try {
-      const response = await fetch('http://deka.pylex.software:11219/SupportForm', {
+      const response = await fetch('http://helya.pylex.xyz:10209/SupportForm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

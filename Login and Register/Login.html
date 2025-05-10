@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h2 class="loading-text">Checking login status</h2>
+            <p class="loading-subtext">Please wait a moment...</p>
+        </div>
+    </div>
+
     <header class="header">
         <div class="header-content">
             <div class="logo">Accounting World</div>
@@ -36,7 +44,10 @@
                         <div class="inputForm">
                             <input type="password" id="password" required>
                             <button type="button" class="toggle-password">
-                                <img src="eye.svg" alt="Toggle password visibility" class="eye-icon">
+                                <svg class="eye-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
                             </button>
                             <span id="password-error" class="error-message"></span>
                         </div>
@@ -57,7 +68,7 @@
                     <div id="success-message" class="message"></div>
                     <button type="submit">Sign In</button>
                 </form>
-                <p class="signup-link">Don't have an account? <a href="signup.html">Sign up</a></p>
+                <p class="signup-link">Don't have an account? <a href="Sign Up.html">Sign up</a></p>
             </div>
         </div>
     </main>
@@ -78,14 +89,13 @@
             <div class="footer-section">
                 <h3>Follow Us</h3>
                 <div class="social-links">
-                    <a href="#">Twitter</a>
                     <a href="https://www.facebook.com/share/1BQyew99t2/">Facebook</a>
                     <a href="https://www.instagram.com/sanjaya_jayasundara?igsh=M2lxb3l1enI2MTRx">Instagram</a>
                 </div>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 Accounting World. All rights reserved.</p>
+            <p>&copy; 2025 Accounting World. All rights reserved.</p>
         </div>
     </footer>
 

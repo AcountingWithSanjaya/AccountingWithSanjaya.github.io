@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchClasses() {
         try {
-            const response = await fetch('http://deka.pylex.software:11219/schedule');
+            const response = await fetch('http://helya.pylex.xyz:10209/schedule');
             if (!response.ok) {
                 throw new Error('Failed to fetch classes');
             }

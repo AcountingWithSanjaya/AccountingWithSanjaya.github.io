@@ -1,4 +1,4 @@
-const PAPERS_API_URL = 'http://deka.pylex.software:11219/loadpapers';
+const PAPERS_API_URL = 'http://helya.pylex.xyz:10209/loadpapers';
 
 let allPapers = [];
 let filteredPapers = [];

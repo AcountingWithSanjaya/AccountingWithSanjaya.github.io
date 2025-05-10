@@ -1,4 +1,4 @@
-const API_URL = 'http://deka.pylex.software:11219/';
+const API_URL = 'http://helya.pylex.xyz:10209/';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('authToken');

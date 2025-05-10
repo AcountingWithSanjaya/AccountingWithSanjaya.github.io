@@ -1,11 +1,16 @@
 document.addEventListener("DOMContentLoaded", async function () {
+  const loadingOverlay = document.getElementById("loading-overlay");
+  
+  // Show loading overlay
+  loadingOverlay.classList.remove("hidden");
+  
   const token = localStorage.getItem("authToken");
   const userEmail = localStorage.getItem("userEmail");
 
   if (token && userEmail) {
     try {
       const response = await fetch(
-        "http://deka.pylex.software:11219/confirmloggedin",
+        "http://helya.pylex.xyz:10209/confirmloggedin",
         {
           method: "POST",
           headers: {
@@ -19,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       );
 
       if (response.ok) {
-        window.location.href = "../User/Profile.html";
+        window.location.href = "../Student Lobby/Profile.html";
         return;
       } else {
         localStorage.removeItem("authToken");
@@ -29,14 +34,20 @@ document.addEventListener("DOMContentLoaded", async function () {
       console.error("Error checking login status:", error);
     }
   }
+  
+  // Hide loading overlay after a short delay
+  setTimeout(() => {
+    loadingOverlay.classList.add("hidden");
+  }, 300);
 
   const form = document.getElementById("login-form");
   const emailError = document.getElementById("email-error");
   const passwordError = document.getElementById("password-error");
+  const termsError = document.getElementById("terms-error");
   const successMessage = document.getElementById("success-message");
   const rememberMeCheckbox = document.getElementById("remember-me");
   const passwordInput = form.querySelector('input[type="password"]');
-  const toggleButton = form.querySelector(".inputForm button");
+  const toggleButtons = form.querySelectorAll(".toggle-password");
   const storedEmail = localStorage.getItem("rememberedEmail");
   const storedRememberMe = localStorage.getItem("rememberMe") === "true";
 
@@ -45,10 +56,26 @@ document.addEventListener("DOMContentLoaded", async function () {
     rememberMeCheckbox.checked = true;
   }
 
-  toggleButton.addEventListener("click", function (e) {
-    e.preventDefault();
-    const input = this.previousElementSibling;
-    input.type = input.type === "password" ? "text" : "password";
+  toggleButtons.forEach(button => {
+    button.addEventListener("click", function() {
+      const input = this.previousElementSibling;
+      const type = input.type === "password" ? "text" : "password";
+      input.type = type;
+      
+      // Update icon
+      const eyeIcon = this.querySelector('.eye-icon');
+      if (type === "text") {
+        eyeIcon.innerHTML = `
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+        `;
+      } else {
+        eyeIcon.innerHTML = `
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        `;
+      }
+    });
   });
 
   form.addEventListener("submit", async function (event) {
@@ -56,11 +83,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     emailError.textContent = "";
     passwordError.textContent = "";
+    termsError.textContent = "";
     successMessage.textContent = "";
 
     const email = form.querySelector('input[type="email"]').value.trim();
     const password = passwordInput.value.trim();
     const rememberMe = rememberMeCheckbox.checked;
+    const acceptTerms = document.getElementById("accept-terms").checked;
 
     let isValid = true;
 
@@ -74,6 +103,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (!password) {
       passwordError.textContent = "Password is required";
+      isValid = false;
+    }
+
+    if (!acceptTerms) {
+      termsError.textContent = "You must accept the terms and conditions";
       isValid = false;
     }
 
@@ -92,7 +126,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       submitButton.disabled = true;
       submitButton.textContent = "Signing in...";
 
-      const response = await fetch("http://deka.pylex.software:11219/login", {
+      const response = await fetch("http://helya.pylex.xyz:10209/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,10 +142,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         localStorage.setItem("username", result.username);
 
         successMessage.textContent = "Login successful!";
-        successMessage.style.color = "green";
+        successMessage.style.color = "var(--success-green)";
+        successMessage.style.backgroundColor = "#e8f5e9";
 
         const verifyResponse = await fetch(
-          "http://deka.pylex.software:11219/confirmloggedin",
+          "http://helya.pylex.xyz:10209/confirmloggedin",
           {
             method: "POST",
             headers: {
@@ -137,7 +172,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     } catch (error) {
       console.error("Error:", error);
       successMessage.textContent = error.message;
-      successMessage.style.color = "red";
+      successMessage.style.color = "var(--error-red)";
+      successMessage.style.backgroundColor = "#ffebee";
     } finally {
       const submitButton = form.querySelector('button[type="submit"]');
       submitButton.disabled = false;
