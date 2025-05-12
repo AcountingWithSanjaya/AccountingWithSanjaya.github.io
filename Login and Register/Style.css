@@ -120,14 +120,15 @@ body {
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .nav a:hover,
 .nav a.active {
-  background-color: var(--blue-100);
+  background-color: var(--light-blue);
   transform: translateY(-2px);
 }
+
 
 .main-content {
   flex: 1;

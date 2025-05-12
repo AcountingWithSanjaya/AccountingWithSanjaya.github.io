@@ -1,4 +1,48 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", async function () {
+  const loadingOverlay = document.getElementById("loading-overlay");
+  
+  // Show loading overlay
+  loadingOverlay.classList.remove("hidden");
+  
+  const token = localStorage.getItem("authToken");
+  const userEmail = localStorage.getItem("userEmail");
+
+  if (token && userEmail) {
+    try {
+      const response = await fetch(
+        "http://helya.pylex.xyz:10209/confirmloggedin",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: userEmail,
+            token: token,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        window.location.href = "../Student Lobby/Profile.html";
+        return;
+      } else {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("rememberedEmail")
+        localStorage.removeItem("rememberMe")
+        localStorage.removeItem("returncustomer")
+      }
+    } catch (error) {
+      console.error("Error checking login status:", error);
+    }
+  }
+  
+  // Hide loading overlay after a short delay
+  setTimeout(() => {
+    loadingOverlay.classList.add("hidden");
+  }, 300);
+
     const modal = document.getElementById('purchaseModal');
     const purchaseButtons = document.querySelectorAll('.purchase-btn');
     const closeBtn = document.querySelector('.close');

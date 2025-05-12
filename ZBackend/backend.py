@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 import string
 import secrets
 import asyncio
@@ -8,7 +9,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from discord.ext import commands
 from datetime import datetime, timedelta
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 app = Flask(__name__)
@@ -17,12 +18,12 @@ load_dotenv()
 intents = discord.Intents.default()
 intents.messages = True
 bot = commands.Bot(command_prefix='!', intents=intents)
-
-
 SIGNUP_CHANNEL_ID = 1302608005744955443
 USERS_FILE = 'users.json'
 SESSIONS_FILE = 'sessions.json'
 MUSIC_FILE = 'music.json'
+
+# Functions
 
 def load_json(file):
     try:
@@ -35,8 +36,7 @@ def load_json(file):
                         'username': user['username'],
                         'birthdate': user['birthdate'],
                         'password': user['password'],
-                        'boughtMusic': user.get('boughtMusic', []),
-                        'publishedMusic': user.get('publishedMusic', [])
+                        'ProfilePicture': user.get('ProfilePicture', []),
                     }
                 save_json(file, converted_data)  
                 return converted_data
@@ -118,6 +118,325 @@ def save_users(users_data):
             json.dump(users_data, file, indent=4)
     except Exception as e:
         print(f"Error saving users: {e}")
+
+
+
+
+# Google Shit
+
+
+
+
+from werkzeug.utils import secure_filename
+import io
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+
+SCOPES = ['https://www.googleapis.com/auth/drive']
+SERVICE_ACCOUNT_FILE = 'credentials.json'
+drive_service = build('drive', 'v3', credentials=service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES))
+FOLDER_ID = '1XvMPHh57_HxzKwVTeVjhUFUHQ38XWHu0'
+USERS_JSON_PATH = 'users.json'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_default_profile_picture():
+    with open('./Images/defaultpfp.png', 'rb') as img_file:
+        return f"data:image/png;base64,{base64.b64encode(img_file.read()).decode('utf-8')}"
+
+def get_or_create_user_subfolder(email):
+    query = f"'{FOLDER_ID}' in parents and name='{email}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+    results = drive_service.files().list(q=query, fields="files(id)").execute()
+    files = results.get('files', [])
+    
+    if files:
+        return files[0]['id']
+    
+    # Create subfolder
+    file_metadata = {
+        'name': email,
+        'mimeType': 'application/vnd.google-apps.folder',
+        'parents': [FOLDER_ID]
+    }
+    folder = drive_service.files().create(body=file_metadata, fields='id').execute()
+    return folder['id']
+
+def delete_existing_files(folder_id):
+    query = f"'{folder_id}' in parents and trashed=false"
+    results = drive_service.files().list(q=query, fields="files(id)").execute()
+    for file in results.get('files', []):
+        drive_service.files().delete(fileId=file['id']).execute()
+
+
+
+
+
+
+# Google Shit
+
+# Profile stuff
+
+
+@app.route('/register', methods=['POST'])
+def newregister():
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        email = data.get('email')
+        birthdate = data.get('birthdate')
+        password = data.get('password')
+
+        if not all([username, email, birthdate, password]):
+            send_embed_to_discord("Registration Failed", f"Missing fields for email: {email}")
+            return jsonify({"message": "All fields are required"}), 400
+
+        users = load_json(USERS_FILE)
+        
+        if email in users:
+            send_embed_to_discord("Registration Failed", f"Email already exists: {email}")
+            return jsonify({"message": "User with this email already exists"}), 409
+            
+        for existing_user in users.values():
+            if existing_user['username'].lower() == username.lower():
+                send_embed_to_discord("Registration Failed", f"Username already exists: {username}")
+                return jsonify({"message": "Username already taken"}), 409
+
+        hashed_password = generate_password_hash(password)
+        users[email] = {
+            "username": username,
+            "birthdate": birthdate,
+            "password": hashed_password,
+            "ProfilePicture": get_default_profile_picture(),
+            "ProfilePictureFileID": "",
+            "credits": 0,
+            "createdAt": datetime.utcnow().isoformat()
+        }
+        
+        save_json(USERS_FILE, users)
+        print(f"New user registered: {username} ({email})")
+        send_embed_to_discord("Registration Successful", f"New user registered: {username} ({email})")
+
+        return jsonify({"message": "Registration successful!"}), 200
+
+    except Exception as e:
+        print(f"Error during registration: {e}")
+        send_embed_to_discord("Registration Error", f"Error occurred while processing registration: {e}")
+        return jsonify({"message": "An error occurred during registration"}), 500
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        identifier = data.get('email') 
+        password = data.get('password')
+
+        if not identifier or not password:
+            return jsonify({"message": "Email/username and password are required"}), 400
+
+        users = load_json(USERS_FILE)
+        email, user = find_user_by_username_or_email(identifier, users)
+
+        if not user or not check_password_hash(user["password"], password):
+            return jsonify({"message": "Invalid username/email or password"}), 401
+
+        cleanup_sessions()
+
+        token = generate_token()
+        sessions = load_json(SESSIONS_FILE)
+        sessions[email] = {
+            'token': token,
+            'created_at': datetime.now().isoformat()
+        }
+        save_json(SESSIONS_FILE, sessions)
+
+        return jsonify({
+            "message": "Login successful!",
+            "token": token,
+            "username": user['username'],
+            "email": email
+        }), 200
+
+    except Exception as e:
+        print(f"Error during login: {e}")
+        return jsonify({"message": "An error occurred during login"}), 500
+
+@app.route('/confirmloggedin', methods=['POST'])
+def confirm_logged_in():
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        token = data.get('token')
+
+        if not email or not token:
+            return jsonify({"message": "Email and token are required"}), 400
+
+        if not verify_token(email, token):
+            return jsonify({"message": "Invalid or expired session"}), 401
+
+        return jsonify({"message": "User is logged in"}), 200
+
+    except Exception as e:
+        print(f"Error during session verification: {e}")
+        return jsonify({"message": "An error occurred while confirming login"}), 500
+
+@app.route('/profile', methods=['GET'])
+def get_profile():
+    try:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"message": "No token provided"}), 401
+            
+        token = auth_header.split(' ')[1]
+        email = request.args.get('email') or request.headers.get('X-User-Email')
+        
+        if not email:
+            return jsonify({"message": "No email provided"}), 401
+            
+        if not verify_token(email, token):
+            return jsonify({"message": "Invalid or expired token"}), 401
+            
+        users = load_json(USERS_FILE)
+        user = users.get(email)
+        
+        if not user:
+            return jsonify({"message": "User not found"}), 404
+        
+        hashed_password = user.get('password')
+        password_length = len(check_password_hash(hashed_password, 'dummy') * '*') if hashed_password else 0
+        
+        return jsonify({
+            "username": user['username'],
+            "email": email,
+            "birthday": user['birthdate'],
+            "passwordLength": '*' * password_length,
+            "ProfilePicture": user.get('ProfilePicture') or get_default_profile_picture(),
+        }), 200
+
+    except Exception as e:
+        print(f"Error fetching profile: {e}")
+        return jsonify({"message": "An error occurred while fetching profile"}), 500
+
+@app.route('/updatepfp', methods=['POST'])
+def update_profile_picture():
+    try:
+        if 'profilePicture' not in request.files or 'email' not in request.form:
+            return jsonify({"message": "Missing file or email"}), 400
+
+        file = request.files['profilePicture']
+        email = request.form['email']
+
+        if file.filename == '' or not allowed_file(file.filename):
+            return jsonify({"message": "Invalid or no file selected"}), 400
+
+        user_folder_id = get_or_create_user_subfolder(email)
+        delete_existing_files(user_folder_id)
+
+        filename = secure_filename(file.filename)
+        file_metadata = {
+            'name': filename,
+            'parents': [user_folder_id]
+        }
+        media = MediaIoBaseUpload(io.BytesIO(file.read()), mimetype=file.mimetype)
+        uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+
+        file_id = uploaded_file.get('id')
+        file_url = f"https://drive.google.com/uc?id={file_id}"
+
+        user_data = {}
+        if os.path.exists(USERS_JSON_PATH):
+            with open(USERS_JSON_PATH, 'r') as f:
+                user_data = json.load(f)
+
+        if email not in user_data:
+            user_data[email] = {}
+
+        user_data[email]["ProfilePicture"] = file_url
+        user_data[email]["ProfilePictureFileID"] = file_id
+        with open(USERS_JSON_PATH, 'w') as f:
+            json.dump(user_data, f, indent=4)
+
+        return jsonify({
+            "message": "Profile picture updated successfully",
+            "profileImage": file_url
+        }), 200
+
+    except Exception as e:
+        print(f"Error updating profile picture: {e}")
+        return jsonify({"message": "An error occurred while updating profile picture"}), 500
+
+@app.route("/ping", methods=["GET"])
+def receive_ping():
+    sender_ip = request.remote_addr
+    return f"Received ping from {sender_ip}"
+
+
+
+# Support, Classes stuff
+
+DISCORD_TOKEN = os.getenv("TOKEN")
+TARGET_USER_ID = 795492792176082944
+loop = asyncio.get_event_loop()
+
+@app.route('/SupportForm', methods=['POST'])
+def handle_form():
+    data = request.json
+
+    name = data.get('name')
+    email = data.get('email')
+    subject = data.get('subject')
+    message = data.get('message')
+
+    if not all([name, email, subject, message]):
+        return jsonify({'message': 'All fields are required'}), 400
+
+    msg = (
+        f"📨 **New Support Message**\n\n"
+        f"**Name:** {name}\n"
+        f"**Email:** {email}\n"
+        f"**Subject:** {subject}\n"
+        f"**Message:** {message}"
+    )
+
+    async def send_dm():
+        await bot.wait_until_ready()
+        user = await bot.fetch_user(TARGET_USER_ID)
+        if user:
+            await user.send(msg)
+
+    try:
+        loop.create_task(send_dm())
+        return jsonify({'message': 'Support message sent on Discord!'}), 200
+    except Exception as e:
+        return jsonify({'message': f'Error sending message: {str(e)}'}), 500
+
+
+CLASSES_FILE = 'classes.json'
+ALLOWED_USERS = os.getenv('ALLOWED_USERS', '').split(',')
+
+def load_classes():
+    try:
+        with open(CLASSES_FILE, 'r') as f:
+            return json.load(f)['classes']
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+def save_classes(classes):
+    with open(CLASSES_FILE, 'w') as f:
+        json.dump({'classes': classes}, f, indent=2)
+
+@app.route('/schedule')
+def get_schedule():
+    try:
+        classes = load_classes()
+        return jsonify(classes)
+    except Exception as e:
+        return jsonify({'error': 'Failed to fetch classes'}), 500
+    
+
 
 @app.route('/api/classes', methods=['GET'])
 def get_classes():
@@ -210,215 +529,98 @@ def get_zoom_link():
 
 
 
-@app.route('/register', methods=['POST'])
-def submit_form():
-    try:
-        data = request.get_json()
-        username = data.get('username')
-        email = data.get('email')
-        birthdate = data.get('birthdate')
-        password = data.get('password')
-
-        if not all([username, email, birthdate, password]):
-            send_embed_to_discord("Registration Failed", f"Missing fields for email: {email}")
-            return jsonify({"message": "All fields are required"}), 400
-
-        users = load_json(USERS_FILE)
-        
-        if email in users:
-            send_embed_to_discord("Registration Failed", f"Email already exists: {email}")
-            return jsonify({"message": "User with this email already exists"}), 409
-            
-        for existing_user in users.values():
-            if existing_user['username'].lower() == username.lower():
-                send_embed_to_discord("Registration Failed", f"Username already exists: {username}")
-                return jsonify({"message": "Username already taken"}), 409
-
-        hashed_password = generate_password_hash(password)
-        users[email] = {
-            "username": username,
-            "birthdate": birthdate,
-            "password": hashed_password,
-            "boughtMusic": [],
-            "publishedMusic": [],
-            "credit": 0,
-            "createdAt": datetime.utcnow().isoformat()
-        }
-
-        save_json(USERS_FILE, users)
-        print(f"New user registered: {username} ({email})")
-        send_embed_to_discord("Registration Successful", f"New user registered: {username} ({email})")
-
-        return jsonify({"message": "Registration successful!"}), 200
-
-    except Exception as e:
-        print(f"Error during registration: {e}")
-        send_embed_to_discord("Registration Error", f"Error occurred while processing registration: {e}")
-        return jsonify({"message": "An error occurred during registration"}), 500
 
 
-@app.route('/login', methods=['POST'])
-def login():
-    try:
-        data = request.get_json()
-        identifier = data.get('email') 
-        password = data.get('password')
 
-        if not identifier or not password:
-            return jsonify({"message": "Email/username and password are required"}), 400
 
-        users = load_json(USERS_FILE)
-        email, user = find_user_by_username_or_email(identifier, users)
 
-        if not user or not check_password_hash(user["password"], password):
-            return jsonify({"message": "Invalid username/email or password"}), 401
 
-        cleanup_sessions()
+# THEBOOK CODE--------------------------------------------------------------------
 
-        token = generate_token()
-        sessions = load_json(SESSIONS_FILE)
-        sessions[email] = {
-            'token': token,
-            'created_at': datetime.now().isoformat()
-        }
-        save_json(SESSIONS_FILE, sessions)
+if not os.path.exists('data'):
+    os.makedirs('data')
 
-        return jsonify({
-            "message": "Login successful!",
-            "token": token,
-            "username": user['username'],
-            "email": email
-        }), 200
+ADMIN_PASSWORD = "1q2w3e4r"
 
-    except Exception as e:
-        print(f"Error during login: {e}")
-        return jsonify({"message": "An error occurred during login"}), 500
 
-@app.route('/confirmloggedin', methods=['POST'])
-def confirm_logged_in():
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        token = data.get('token')
 
-        if not email or not token:
-            return jsonify({"message": "Email and token are required"}), 400
+def init_json_files():
+    files = ['restaurants.json', 'reviews.json']
+    for file in files:
+        path = f'data/{file}'
+        if not os.path.exists(path):
+            with open(path, 'w') as f:
+                json.dump([], f)
 
-        if not verify_token(email, token):
-            return jsonify({"message": "Invalid or expired session"}), 401
+init_json_files()
 
-        return jsonify({"message": "User is logged in"}), 200
 
-    except Exception as e:
-        print(f"Error during session verification: {e}")
-        return jsonify({"message": "An error occurred while confirming login"}), 500
-
-@app.route('/profile', methods=['GET'])
-def get_profile():
-    try:
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return jsonify({"message": "No token provided"}), 401
-            
-        token = auth_header.split(' ')[1]
-        email = request.args.get('email') or request.headers.get('X-User-Email')
-        
-        if not email:
-            return jsonify({"message": "No email provided"}), 401
-            
-        if not verify_token(email, token):
-            return jsonify({"message": "Invalid or expired token"}), 401
-            
-        users = load_json(USERS_FILE)
-        user = users.get(email)
-        
-        if not user:
-            return jsonify({"message": "User not found"}), 404
-        
-        # Extract and mask password length properly
-        hashed_password = user.get('password')
-        password_length = len(check_password_hash(hashed_password, 'dummy') * '*') if hashed_password else 0
-        
-        return jsonify({
-            "username": user['username'],
-            "email": email,
-            "birthday": user['birthdate'],
-            "passwordLength": '*' * password_length,
-            "boughtMusic": user.get('boughtMusic', []),
-            "publishedMusic": user.get('publishedMusic', [])
-        }), 200
-
-    except Exception as e:
-        print(f"Error fetching profile: {e}")
-        return jsonify({"message": "An error occurred while fetching profile"}), 500
-
-@app.route("/ping", methods=["GET"])
-def receive_ping():
-    sender_ip = request.remote_addr
-    return f"Received ping from {sender_ip}"
-
-DISCORD_TOKEN = os.getenv("TOKEN")
-TARGET_USER_ID = 795492792176082944
-loop = asyncio.get_event_loop()
-
-@app.route('/SupportForm', methods=['POST'])
-def handle_form():
+@app.route('/loginbook', methods=['POST'])
+def loginbook():
     data = request.json
+    if data.get('password') == ADMIN_PASSWORD:
+        return jsonify({"success": True})
+    return jsonify({"success": False, "message": "Invalid password"}), 401
 
-    name = data.get('name')
-    email = data.get('email')
-    subject = data.get('subject')
-    message = data.get('message')
+@app.route('/restaurants', methods=['GET', 'POST'])
+def handle_restaurants():
+    if request.method == 'GET':
+        with open('data/restaurants.json', 'r') as f:
+            return jsonify(json.load(f))
+    
+    data = request.json
+    with open('data/restaurants.json', 'r') as f:
+        restaurants = json.load(f)
+    
+    new_restaurant = {
+        "id": str(len(restaurants) + 1),
+        "name": data['name'],
+        "type": data['type'],
+        "products": []
+    }
+    restaurants.append(new_restaurant)
+    
+    with open('data/restaurants.json', 'w') as f:
+        json.dump(restaurants, f)
+    
+    return jsonify(new_restaurant)
 
-    if not all([name, email, subject, message]):
-        return jsonify({'message': 'All fields are required'}), 400
+@app.route('/reviews', methods=['GET', 'POST'])
+def handle_reviews():
+    if request.method == 'GET':
+        restaurant_id = request.args.get('restaurant_id')
+        with open('data/reviews.json', 'r') as f:
+            reviews = json.load(f)
+        if restaurant_id:
+            reviews = [r for r in reviews if r['restaurant_id'] == restaurant_id]
+        return jsonify(reviews)
+    
+    data = request.json
+    with open('data/reviews.json', 'r') as f:
+        reviews = json.load(f)
+    
+    new_review = {
+        "id": str(len(reviews) + 1),
+        "restaurant_id": data['restaurant_id'],
+        "product_name": data['product_name'],
+        "rating": data['rating'],
+        "review": data['review'],
+        "date": datetime.now().isoformat()
+    }
+    reviews.append(new_review)
+    
+    with open('data/reviews.json', 'w') as f:
+        json.dump(reviews, f)
+    
+    return jsonify(new_review)
 
-    msg = (
-        f"📨 **New Support Message**\n\n"
-        f"**Name:** {name}\n"
-        f"**Email:** {email}\n"
-        f"**Subject:** {subject}\n"
-        f"**Message:** {message}"
-    )
+# THEBOOK CODE--------------------------------------------------------------------
 
-    async def send_dm():
-        await bot.wait_until_ready()
-        user = await bot.fetch_user(TARGET_USER_ID)
-        if user:
-            await user.send(msg)
-
-    try:
-        loop.create_task(send_dm())
-        return jsonify({'message': 'Support message sent on Discord!'}), 200
-    except Exception as e:
-        return jsonify({'message': f'Error sending message: {str(e)}'}), 500
-
+def run_bot():
+    bot.run(os.getenv('TOKEN'))
 
 def run_discord_bot():
     loop.create_task(bot.start(DISCORD_TOKEN))
-
-
-CLASSES_FILE = 'classes.json'
-ALLOWED_USERS = os.getenv('ALLOWED_USERS', '').split(',')
-
-def load_classes():
-    try:
-        with open(CLASSES_FILE, 'r') as f:
-            return json.load(f)['classes']
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-def save_classes(classes):
-    with open(CLASSES_FILE, 'w') as f:
-        json.dump({'classes': classes}, f, indent=2)
-
-@app.route('/schedule')
-def get_schedule():
-    try:
-        classes = load_classes()
-        return jsonify(classes)
-    except Exception as e:
-        return jsonify({'error': 'Failed to fetch classes'}), 500
 
 @bot.event
 async def on_ready():
@@ -458,9 +660,6 @@ async def on_message(message):
                 await message.reply('Invalid date or time format. Please use YYYY-MM-DD for date and HH:MM for time.')
 
     await bot.process_commands(message)
-
-def run_bot():
-    bot.run(os.getenv('TOKEN'))
 
 if __name__ == '__main__':
     import threading

@@ -48,11 +48,12 @@ document.addEventListener("DOMContentLoaded", async function () {
       } else {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userEmail");
+        localStorage.removeItem("rememberedEmail")
+        localStorage.removeItem("rememberMe")
+        localStorage.removeItem("returncustomer")
       }
     } catch (error) {
       console.error("Error checking login status:", error);
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("userEmail");
     }
   }
   
@@ -139,7 +140,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       // Show loading overlay during account creation
       loadingOverlay.classList.remove("hidden");
 
-      const response = await fetch("http://helya.pylex.xyz:10209/signup", {
+      const response = await fetch("http://helya.pylex.xyz:10209/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

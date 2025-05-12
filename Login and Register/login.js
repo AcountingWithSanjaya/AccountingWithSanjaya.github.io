@@ -29,6 +29,9 @@ document.addEventListener("DOMContentLoaded", async function () {
       } else {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userEmail");
+        localStorage.removeItem("rememberedEmail")
+        localStorage.removeItem("rememberMe")
+        localStorage.removeItem("returncustomer")
       }
     } catch (error) {
       console.error("Error checking login status:", error);
@@ -161,7 +164,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         if (verifyResponse.ok) {
           setTimeout(() => {
-            window.location.href = "../User/Profile.html";
+            window.location.href = "../Student Lobby/Profile.html";
           }, 1500);
         } else {
           throw new Error("Token verification failed");
