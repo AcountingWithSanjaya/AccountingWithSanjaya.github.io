@@ -63,6 +63,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const form = document.getElementById("signup-form");
   const fullnameError = document.getElementById("fullname-error");
   const emailError = document.getElementById("email-error");
+  const birthdateError = document.getElementById("birthdate-error");
   const passwordError = document.getElementById("password-error");
   const confirmPasswordError = document.getElementById("confirm-password-error");
   const termsError = document.getElementById("terms-error");
@@ -84,6 +85,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Reset error messages
     fullnameError.textContent = "";
     emailError.textContent = "";
+    birthdateError.textContent = "";
     passwordError.textContent = "";
     confirmPasswordError.textContent = "";
     termsError.textContent = "";
@@ -93,6 +95,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const fullname = document.getElementById("fullname").value.trim();
     const email = document.getElementById("email").value.trim();
+    const birthdate = document.getElementById("birthdate").value;
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirm-password").value;
     const acceptTerms = document.getElementById("accept-terms").checked;
@@ -109,6 +112,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       emailError.textContent = "Please enter a valid email";
+      isValid = false;
+    }
+
+    if (!birthdate) {
+      birthdateError.textContent = "Date of birth is required";
       isValid = false;
     }
 
@@ -137,7 +145,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       submitButton.disabled = true;
       submitButton.textContent = "Creating Account...";
 
-      // Show loading overlay during account creation
       loadingOverlay.classList.remove("hidden");
 
       const response = await fetch("http://helya.pylex.xyz:10209/register", {
@@ -146,9 +153,10 @@ document.addEventListener("DOMContentLoaded", async function () {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          fullname,
+          username: fullname, // Changed from fullname to username to match backend
           email,
-          password
+          password,
+          birthdate
         }),
       });
 

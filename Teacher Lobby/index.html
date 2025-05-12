@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AW - Teacher Lobby</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  </head>
+  <body>
+    <div id="app">
+      <header class="header">
+        <div class="header-content">
+          <div class="logo">TeacherHub</div>
+          <nav class="nav">
+            <a href="#dashboard" class="active" data-page="dashboard">Dashboard</a>
+            <a href="#recordings" data-page="recordings">Recordings</a>
+            <a href="#schedule" data-page="schedule">Schedule Classes</a>
+            <a href="#papers" data-page="papers">Papers</a>
+          </nav>
+          <div class="user-profile">
+            <span class="user-name">Jane Doe</span>
+            <div class="avatar">JD</div>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <div id="dashboard-page" class="page active">
+          <h1 class="page-title">Teacher Dashboard</h1>
+          
+          <div class="dashboard-stats">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-video"></i></div>
+              <div class="stat-content">
+                <h3>Pending Recordings</h3>
+                <p class="stat-value">5</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-calendar"></i></div>
+              <div class="stat-content">
+                <h3>Upcoming Classes</h3>
+                <p class="stat-value">8</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+              <div class="stat-content">
+                <h3>Papers to Grade</h3>
+                <p class="stat-value">12</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-users"></i></div>
+              <div class="stat-content">
+                <h3>Total Students</h3>
+                <p class="stat-value">87</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-content">
+            <div class="dashboard-section">
+              <div class="section-header">
+                <h2>Pending Recordings</h2>
+                <a href="#recordings" class="view-all">View All</a>
+              </div>
+              <div class="recordings-grid dashboard-grid">
+              </div>
+            </div>
+            
+            <div class="dashboard-section">
+              <div class="section-header">
+                <h2>Upcoming Classes</h2>
+                <a href="#schedule" class="view-all">View All</a>
+              </div>
+              <div class="upcoming-classes-container">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="recordings-page" class="page">
+          <h1 class="page-title">Class Recordings</h1>
+          
+          <div class="recordings-container">
+            <div class="filters-card">
+              <h2>Filters</h2>
+              <div class="form-group">
+                <label for="course-filter">Course</label>
+                <select id="course-filter" class="filter-select">
+                  <option value="all">All Courses</option>
+                  <option value="math101">Mathematics 101</option>
+                  <option value="phys201">Physics 201</option>
+                  <option value="chem101">Chemistry 101</option>
+                  <option value="bio302">Biology 302</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="date-filter">Date Range</label>
+                <select id="date-filter" class="filter-select">
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="status-filter">Status</label>
+                <select id="status-filter" class="filter-select">
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending Upload</option>
+                  <option value="uploaded">Uploaded</option>
+                </select>
+              </div>
+              <button class="cta-button">
+                <i class="fas fa-filter"></i> Apply Filters
+              </button>
+            </div>
+            
+            <div class="recordings-list-card">
+              <h2>Pending Recordings</h2>
+              <div class="recordings-grid">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="schedule-page" class="page">
+          <h1 class="page-title">Schedule Classes</h1>
+          
+          <div class="schedule-container">
+            <div class="schedule-sidebar">
+              <div class="calendar-card">
+                <div class="month-navigator">
+                  <button class="month-nav-btn" id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                  <h2 id="current-month">September 2023</h2>
+                  <button class="month-nav-btn" id="next-month"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                </div>
+              </div>
+              
+              <div class="schedule-form-card">
+                <h2>Schedule New Class</h2>
+                <form id="schedule-form">
+                  <div class="form-group">
+                    <label for="class-title">Class Title</label>
+                    <input type="text" id="class-title" class="form-input" placeholder="Enter class title" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="class-course">Course</label>
+                    <select id="class-course" class="form-select" required>
+                      <option value="">Select a course</option>
+                      <option value="math101">Mathematics 101</option>
+                      <option value="phys201">Physics 201</option>
+                      <option value="chem101">Chemistry 101</option>
+                      <option value="bio302">Biology 302</option>
+                    </select>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group half">
+                      <label for="class-date">Date</label>
+                      <input type="date" id="class-date" class="form-input" required>
+                    </div>
+                    <div class="form-group half">
+                      <label for="class-time">Time</label>
+                      <input type="time" id="class-time" class="form-input" required>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="class-duration">Duration (minutes)</label>
+                    <input type="number" id="class-duration" class="form-input" min="15" max="180" step="15" value="60" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="class-description">Description (Optional)</label>
+                    <textarea id="class-description" class="form-textarea" rows="3" placeholder="Add details about this class"></textarea>
+                  </div>
+                  <button type="submit" class="cta-button">
+                    <i class="fas fa-calendar-plus"></i> Schedule Class
+                  </button>
+                </form>
+              </div>
+            </div>
+            
+            <div class="schedule-main">
+              <div class="schedule-tabs">
+                <button class="tab-btn active" data-tab="upcoming">Upcoming Classes</button>
+                <button class="tab-btn" data-tab="past">Past Classes</button>
+              </div>
+              
+              <div class="tab-content active" id="upcoming-tab">
+                <div class="class-list" id="upcoming-classes">
+                </div>
+              </div>
+              
+              <div class="tab-content" id="past-tab">
+                <div class="class-list" id="past-classes">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="papers-page" class="page">
+          <h1 class="page-title">Papers & Documents</h1>
+          
+          <div class="papers-container">
+            <div class="papers-sidebar">
+              <div class="upload-card">
+                <h2>Upload Documents</h2>
+                <div class="upload-area" id="upload-area">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                  <p>Drag & drop files here</p>
+                  <p class="upload-sub">or</p>
+                  <label for="file-input" class="upload-btn">Browse Files</label>
+                  <input type="file" id="file-input" multiple class="hidden">
+                </div>
+                <div class="upload-list" id="upload-list">
+                </div>
+                <button class="cta-button upload-submit-btn" id="upload-submit-btn" disabled>
+                  <i class="fas fa-paper-plane"></i> Upload Files
+                </button>
+              </div>
+              
+              <div class="filters-card">
+                <h2>Filter Documents</h2>
+                <div class="form-group">
+                  <label for="doc-type-filter">Document Type</label>
+                  <select id="doc-type-filter" class="filter-select">
+                    <option value="all">All Types</option>
+                    <option value="assignment">Assignments</option>
+                    <option value="syllabus">Syllabus</option>
+                    <option value="exam">Exams</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="doc-course-filter">Course</label>
+                  <select id="doc-course-filter" class="filter-select">
+                    <option value="all">All Courses</option>
+                    <option value="math101">Mathematics 101</option>
+                    <option value="phys201">Physics 201</option>
+                    <option value="chem101">Chemistry 101</option>
+                    <option value="bio302">Biology 302</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="doc-date-filter">Upload Date</label>
+                  <select id="doc-date-filter" class="filter-select">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                  </select>
+                </div>
+                <button class="cta-button">
+                  <i class="fas fa-filter"></i> Apply Filters
+                </button>
+              </div>
+            </div>
+            
+            <div class="papers-main">
+              <div class="papers-header">
+                <div class="papers-search">
+                  <input type="text" class="search-input" placeholder="Search documents...">
+                  <button class="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="papers-view-toggle">
+                  <button class="view-btn active" data-view="grid"><i class="fas fa-th"></i></button>
+                  <button class="view-btn" data-view="list"><i class="fas fa-list"></i></button>
+                </div>
+              </div>
+              
+              <div class="papers-grid active" id="papers-grid">
+              </div>
+              
+              <div class="papers-list" id="papers-list">
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>TeacherHub</h3>
+            <p>Making education management easier for teachers around the world.</p>
+          </div>
+          <div class="footer-section">
+            <h3>Quick Links</h3>
+            <a href="#dashboard">Dashboard</a>
+            <a href="#recordings">Recordings</a>
+            <a href="#schedule">Schedule</a>
+            <a href="#papers">Papers</a>
+          </div>
+          <div class="footer-section">
+            <h3>Support</h3>
+            <a href="#">Help Center</a>
+            <a href="#">Contact Us</a>
+            <a href="#">FAQ</a>
+          </div>
+          <div class="footer-section">
+            <h3>Connect</h3>
+            <div class="social-links">
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-facebook"></i></a>
+              <a href="#"><i class="fab fa-linkedin"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2023 TeacherHub. All rights reserved.</p>
+        </div>
+      </footer>
+
+      <div class="modal" id="upload-recording-modal">
+        <div class="modal-content">
+          <span class="close-modal" id="close-upload-modal">&times;</span>
+          <h2>Upload Class Recording</h2>
+          <form id="recording-upload-form">
+            <div class="form-group">
+              <label for="recording-title">Recording Title</label>
+              <input type="text" id="recording-title" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label for="recording-course">Course</label>
+              <select id="recording-course" class="form-select" required>
+                <option value="">Select a course</option>
+                <option value="math101">Mathematics 101</option>
+                <option value="phys201">Physics 201</option>
+                <option value="chem101">Chemistry 101</option>
+                <option value="bio302">Biology 302</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="recording-date">Class Date</label>
+              <input type="date" id="recording-date" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label for="recording-file">Recording File</label>
+              <div class="file-upload-area">
+                <i class="fas fa-video"></i>
+                <p>Drag & drop your recording here</p>
+                <label for="recording-file-input" class="upload-btn">Browse Files</label>
+                <input type="file" id="recording-file-input" class="hidden" accept="video/*">
+              </div>
+              <p id="selected-recording-file" class="selected-file hidden"></p>
+            </div>
+            <div class="form-group">
+              <label for="recording-description">Description (Optional)</label>
+              <textarea id="recording-description" class="form-textarea" rows="3"></textarea>
+            </div>
+            <button type="submit" class="cta-button">
+              <i class="fas fa-cloud-upload-alt"></i> Upload Recording
+            </button>
+          </form>
+          <div class="upload-progress-container hidden" id="recording-progress-container">
+            <p>Uploading: <span id="recording-filename"></span></p>
+            <div class="progress-bar-container">
+              <div class="progress-bar" id="recording-progress-bar"></div>
+            </div>
+            <p class="progress-text"><span id="recording-progress-text">0%</span> complete</p>
+          </div>
+          <div class="status-message success hidden" id="recording-success-message">
+            Recording uploaded successfully!
+          </div>
+          <div class="status-message error hidden" id="recording-error-message">
+            Failed to upload recording. Please try again.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading TeacherHub</p>
+        <p class="loading-subtext">Please wait...</p>
+      </div>
+    </div> 
+
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>

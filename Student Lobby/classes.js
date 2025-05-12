@@ -1,36 +1,57 @@
-const API_URL = 'http://helya.pylex.xyz:10209/';
+const API_URL = 'http://helya.pylex.xyz:10209';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const token = localStorage.getItem('authToken');
-    const userEmail = localStorage.getItem('userEmail');
+  const loadingOverlay = document.getElementById('loading-overlay');
+  if (loadingOverlay) loadingOverlay.classList.remove('hidden');
 
-    if (!token || !userEmail) {
-        window.location.href = '../Login and Register/Login.html';
-        return;
+  const token = localStorage.getItem('authToken');
+  const userEmail = localStorage.getItem('userEmail');
+
+  if (!token || !userEmail) {
+    redirectToLogin();
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/confirmloggedin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: userEmail, token }),
+    });
+
+    if (!response.ok) {
+      handleInvalidSession();
+      return;
     }
 
-    try {
-        const response = await fetch(`${API_URL}/confirmloggedin`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: userEmail,
-                token: token
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Not authenticated');
-        }
-
-        await Promise.all([fetchUserCredits(), fetchClasses()]);
-    } catch (error) {
-        console.error('Authentication error:', error);
-        window.location.href = '../Login and Register/Login.html';
-    }
+    await Promise.all([fetchUserCredits(), fetchClasses()]);
+  } catch (error) {
+    console.error('Authentication error:', error);
+    handleInvalidSession();
+    return;
+  } finally {
+    // Hide the loading overlay after short delay for smoother UX
+    setTimeout(() => {
+      if (loadingOverlay) loadingOverlay.classList.add('hidden');
+    }, 300);
+  }
 });
+
+function redirectToLogin() {
+  window.location.href = '../Login and Register/Login.html';
+}
+
+function handleInvalidSession() {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('userEmail');
+  localStorage.removeItem('rememberedEmail');
+  localStorage.removeItem('rememberMe');
+  localStorage.removeItem('returncustomer');
+  redirectToLogin();
+}
+
 
 async function fetchUserCredits() {
     try {

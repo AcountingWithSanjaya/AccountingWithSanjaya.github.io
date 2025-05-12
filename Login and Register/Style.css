@@ -129,7 +129,6 @@ body {
   transform: translateY(-2px);
 }
 
-
 .main-content {
   flex: 1;
   padding: 80px 20px 40px;
@@ -230,6 +229,23 @@ input {
   font-size: 1rem;
   transition: all 0.3s ease;
   background-color: var(--white);
+}
+
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2rem;
+  cursor: pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 
 input:hover {

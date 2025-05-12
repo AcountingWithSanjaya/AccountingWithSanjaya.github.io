@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", async function () {
   const loadingOverlay = document.getElementById("loading-overlay");
-  
-  // Show loading overlay
   loadingOverlay.classList.remove("hidden");
   
   const token = localStorage.getItem("authToken");
@@ -38,7 +36,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   }
   
-  // Hide loading overlay after a short delay
   setTimeout(() => {
     loadingOverlay.classList.add("hidden");
   }, 300);
