@@ -208,54 +208,117 @@ function initPurchaseModal() {
   const modal = document.getElementById('purchaseModal');
   const purchaseButtons = document.querySelectorAll('.purchase-btn');
   const closeBtn = document.querySelector('.close');
-  const paymentForm = document.getElementById('paymentForm');
+  // const paymentForm = document.getElementById('paymentForm'); // Local payment form no longer used by these buttons
 
   purchaseButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const pkg = button.dataset.package;
+    button.addEventListener('click', async () => {
+      const packageName = button.dataset.package;
       const price = button.dataset.price;
-      const credits = button.dataset.credits;
+      const creditsToAdd = button.dataset.credits;
 
-      document.getElementById('summaryPackage').textContent = pkg.charAt(0).toUpperCase() + pkg.slice(1);
-      document.getElementById('summaryCredits').textContent = credits + ' Credits';
-      document.getElementById('summaryPrice').textContent = '$' + price;
+      const userEmail = localStorage.getItem('userEmail');
+      const authToken = localStorage.getItem('authToken');
 
-      modal.style.display = 'block';
+      if (!userEmail || !authToken) {
+        alert('Please log in to make a purchase.');
+        // Optionally redirect to login page: window.location.href = '/path/to/login.html';
+        return;
+      }
+
+      try {
+        // Show some loading indicator here if desired
+        button.disabled = true;
+        button.textContent = 'Processing...';
+
+        const response = await fetch('http://helya.pylex.xyz:10209/payhere/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            email: userEmail,
+            packageName: packageName,
+            price: price,
+            creditsToAdd: creditsToAdd
+          })
+        });
+
+        const paymentData = await response.json();
+
+        if (response.ok && paymentData.success) {
+          // Hide modal if it was somehow opened, or reset UI
+          if(modal) modal.style.display = 'none';
+          
+          // Payment object for PayHere SDK
+          const payment = {
+            "sandbox": true, // Set to false for live environment
+            "merchant_id": paymentData.merchant_id,
+            "return_url": paymentData.return_url,
+            "cancel_url": paymentData.cancel_url,
+            "notify_url": paymentData.notify_url,
+            "order_id": paymentData.order_id,
+            "items": paymentData.items,
+            "amount": paymentData.amount,
+            "currency": paymentData.currency,
+            "hash": paymentData.hash,
+            "first_name": paymentData.first_name,
+            "last_name": paymentData.last_name,
+            "email": paymentData.email,
+            "phone": paymentData.phone,
+            "address": paymentData.address,
+            "city": paymentData.city,
+            "country": paymentData.country,
+            "custom_1": paymentData.custom_1,
+            "custom_2": paymentData.custom_2
+          };
+          
+          payhere.startPayment(payment);
+
+        } else {
+          alert(`Error: ${paymentData.message || 'Could not initiate payment.'}`);
+          button.disabled = false;
+          button.textContent = 'Purchase Now';
+        }
+      } catch (error) {
+        console.error('Purchase initiation error:', error);
+        alert('An error occurred while trying to initiate payment. Please try again.');
+        button.disabled = false;
+        button.textContent = 'Purchase Now';
+      }
     });
   });
 
-  closeBtn.addEventListener('click', () => modal.style.display = 'none');
-  window.addEventListener('click', event => {
-    if (event.target === modal) modal.style.display = 'none';
-  });
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', event => {
+      if (event.target === modal) modal.style.display = 'none';
+    });
+  }
+  
+  // Callbacks for PayHere (optional, but good for handling events)
+  payhere.onCompleted = function onCompleted(orderId) {
+    console.log("Payment completed. OrderID:" + orderId);
+    // Note: User credit update should happen via PayHere Notify URL on the backend.
+    // You might redirect to a success page or update UI here.
+    // e.g., window.location.href = '/Purchase/purchase-success.html?order_id=' + orderId;
+  };
 
-  document.getElementById('cardNumber').addEventListener('input', e => {
-    let value = e.target.value.replace(/\D/g, '');
-    e.target.value = value.replace(/(.{4})/g, '$1 ').trim();
-  });
+  payhere.onDismissed = function onDismissed() {
+    console.log("Payment dismissed");
+    // Handle when user closes the PayHere payment dialog
+  };
 
-  document.getElementById('expiryDate').addEventListener('input', e => {
-    let value = e.target.value.replace(/\D/g, '');
-    e.target.value = value.length > 2 ? value.slice(0, 2) + '/' + value.slice(2) : value;
-  });
+  payhere.onError = function onError(error) {
+    console.log("Error:" + error);
+    // Handle payment errors
+    alert("Payment Error: " + error);
+  };
 
-  document.getElementById('cvv').addEventListener('input', e => {
-    e.target.value = e.target.value.replace(/\D/g, '');
-  });
-
-  paymentForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const submitBtn = e.target.querySelector('.submit-btn');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Processing...';
-    setTimeout(() => {
-      alert('Payment successful! Credits have been added to your account.');
-      modal.style.display = 'none';
-      paymentForm.reset();
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Complete Purchase';
-    }, 1500);
-  });
+  // The local payment form submission logic is removed as PayHere handles the payment.
+  // If you still need the modal for other purposes, its related event listeners like
+  // for cardNumber, expiryDate, cvv, and the paymentForm submit event would be kept,
+  // but they are not used by the "Purchase Now" buttons anymore.
 }
 
 function initSupportForm() {
