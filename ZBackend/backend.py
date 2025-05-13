@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import hashlib
+import uuid
 app = Flask(__name__)
 CORS(app)
 load_dotenv()
@@ -22,6 +24,17 @@ SIGNUP_CHANNEL_ID = 1302608005744955443
 USERS_FILE = 'users.json'
 SESSIONS_FILE = 'sessions.json'
 MUSIC_FILE = 'music.json'
+
+# PayHere Configuration
+PAYHERE_MERCHANT_ID = os.getenv('PAYHERE_MERCHANT_ID', 'YOUR_SANDBOX_MERCHANT_ID')
+PAYHERE_MERCHANT_SECRET = os.getenv('PAYHERE_MERCHANT_SECRET', 'YOUR_SANDBOX_MERCHANT_SECRET')
+PAYHERE_CHECKOUT_URL = 'https://sandbox.payhere.lk/pay/checkout'  # Use 'https://www.payhere.lk/pay/checkout' for live
+
+# Base URL for frontend return/cancel pages.
+APP_BASE_URL = os.getenv('FRONTEND_APP_BASE_URL', 'http://127.0.0.1:5500')
+
+# This must be the public backend.
+NOTIFY_URL_BASE = os.getenv('BACKEND_NOTIFY_URL_BASE', 'http://helya.pylex.xyz:10209')
 
 # Functions
 
@@ -534,6 +547,163 @@ def get_zoom_link():
 
 
 
+
+# -------------------- PAYHERE CREDIT PURCHASE INTEGRATION ------------------------
+
+@app.route('/payhere/checkout', methods=['POST'])
+def payhere_checkout():
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"message": "Authorization token is missing or malformed"}), 401
+        token = auth_header.split(' ')[1]
+        
+        package_name = data.get('packageName')
+        price_str = data.get('price')
+        credits_to_add_str = data.get('creditsToAdd')
+
+        if not all([email, token, package_name, price_str, credits_to_add_str]):
+            return jsonify({"message": "Missing required fields for payment initiation"}), 400
+
+        if not verify_token(email, token):
+            return jsonify({"message": "Invalid or expired session"}), 401
+
+        users = load_json(USERS_FILE)
+        user = users.get(email)
+        if not user:
+            return jsonify({"message": "User not found"}), 404
+
+        try:
+            amount = float(price_str)
+            credits_to_add = int(credits_to_add_str)
+        except ValueError:
+            return jsonify({"message": "Invalid price or credits format"}), 400
+
+        order_id = str(uuid.uuid4())
+        currency = 'LKR'
+        amount_formatted_for_hash = "{:.2f}".format(amount)
+        merchant_secret_hashed_upper = hashlib.md5(PAYHERE_MERCHANT_SECRET.encode('utf-8')).hexdigest().upper()
+        
+        hash_string = "".join([
+            PAYHERE_MERCHANT_ID,
+            order_id,
+            amount_formatted_for_hash,
+            currency,
+            merchant_secret_hashed_upper
+        ])
+        final_hash = hashlib.md5(hash_string.encode('utf-8')).hexdigest().upper()
+
+        return_url = f'{APP_BASE_URL}/Purchase/purchase-success.html'
+        cancel_url = f'{APP_BASE_URL}/Purchase/purchase-cancelled.html'
+        notify_url = f'{NOTIFY_URL_BASE}/payhere/notify'
+
+        user_full_name = user.get('username', 'N/A')
+        first_name_val = user_full_name.split(' ')[0] if user_full_name != 'N/A' else 'N/A'
+        last_name_val = user_full_name.split(' ')[-1] if ' ' in user_full_name and user_full_name != 'N/A' else 'N/A'
+        if first_name_val == last_name_val and first_name_val != 'N/A':
+            last_name_val = ''
+
+        payload = {
+            "success": True,
+            "merchant_id": PAYHERE_MERCHANT_ID,
+            "return_url": return_url,
+            "cancel_url": cancel_url,
+            "notify_url": notify_url,
+            "order_id": order_id,
+            "items": package_name,
+            "currency": currency,
+            "amount": amount_formatted_for_hash,
+            "first_name": first_name_val,
+            "last_name": last_name_val,
+            "email": email,
+            "phone": "",
+            "address": "",
+            "city": "",
+            "country": "Sri Lanka",
+            "hash": final_hash,
+            "custom_1": email,
+            "custom_2": str(credits_to_add)
+        }
+        return jsonify(payload), 200
+    except Exception as e:
+        print(f"Error during PayHere checkout initiation: {e}")
+        return jsonify({"message": "An error occurred during payment initiation", "error": str(e)}), 500
+
+
+@app.route('/payhere/notify', methods=['POST'])
+def payhere_notify():
+    try:
+        data = request.form
+        merchant_id = data.get('merchant_id')
+        order_id = data.get('order_id')
+        payhere_amount = data.get('payhere_amount')
+        payhere_currency = data.get('payhere_currency')
+        status_code = data.get('status_code')
+        md5sig_from_payhere = data.get('md5sig')
+        user_email_on_notify = data.get('custom_1')
+        credits_to_add_on_notify_str = data.get('custom_2')
+
+        if not all([merchant_id, order_id, payhere_amount, payhere_currency, status_code, md5sig_from_payhere, user_email_on_notify, credits_to_add_on_notify_str]):
+            print(f"PayHere Notify: Missing data in notification. Order ID: {order_id}, Email: {user_email_on_notify}")
+            return "Notification Error: Missing Data", 400
+
+        if merchant_id != PAYHERE_MERCHANT_ID:
+            print(f"PayHere Notify: Merchant ID mismatch. Order ID: {order_id}")
+            return "Notification Error: Merchant ID Mismatch", 400
+
+        merchant_secret_hashed_upper = hashlib.md5(PAYHERE_MERCHANT_SECRET.encode('utf-8')).hexdigest().upper()
+
+        hash_string_for_notify = "".join([
+            merchant_id,
+            order_id,
+            payhere_amount,
+            payhere_currency,
+            status_code,
+            merchant_secret_hashed_upper
+        ])
+        expected_md5sig = hashlib.md5(hash_string_for_notify.encode('utf-8')).hexdigest().upper()
+
+        if expected_md5sig != md5sig_from_payhere:
+            print(f"PayHere Notify: MD5 signature mismatch for order {order_id}. Expected: {expected_md5sig}, Got: {md5sig_from_payhere}")
+            return "Notification Error: Signature Mismatch", 400 
+
+        if status_code == '2':  # Payment successful
+            users = load_json(USERS_FILE)
+            user = users.get(user_email_on_notify)
+            if user:
+                try:
+                    credits_to_add = int(credits_to_add_on_notify_str)
+                    current_credits = int(user.get('credits', 0))
+                    user['credits'] = current_credits + credits_to_add
+                    save_json(USERS_FILE, users)
+                    print(f"PayHere Notify: Successfully added {credits_to_add} credits to user {user_email_on_notify} for order {order_id}. New balance: {user['credits']}")
+                    send_embed_to_discord(
+                        "Payment Successful & Credits Updated", 
+                        f"User: {user_email_on_notify}\nOrder ID: {order_id}\nAmount: {payhere_amount} {payhere_currency}\nCredits Added: {credits_to_add}\nNew Balance: {user['credits']}"
+                    )
+                except ValueError:
+                    print(f"PayHere Notify: Invalid credits_to_add format '{credits_to_add_on_notify_str}' for user {user_email_on_notify}, order {order_id}")
+                except Exception as e_credits:
+                    print(f"PayHere Notify: Error updating credits for {user_email_on_notify}, order {order_id}: {e_credits}")
+            else:
+                print(f"PayHere Notify: User {user_email_on_notify} not found for order {order_id} after successful payment.")
+        elif status_code == '0':
+            print(f"PayHere Notify: Payment pending for order {order_id}.")
+        elif status_code == '-1':
+            print(f"PayHere Notify: Payment cancelled for order {order_id}.")
+        elif status_code == '-2':
+            print(f"PayHere Notify: Payment failed for order {order_id}.")
+        elif status_code == '-3':
+            print(f"PayHere Notify: Payment chargedback for order {order_id}.")
+        else:
+            print(f"PayHere Notify: Received unknown status_code {status_code} for order {order_id}.")
+
+        return "OK", 200
+    except Exception as e:
+        print(f"Error processing PayHere notification: {e}")
+        return "Internal Server Error processing notification", 500
 
 # THEBOOK CODE--------------------------------------------------------------------
 
