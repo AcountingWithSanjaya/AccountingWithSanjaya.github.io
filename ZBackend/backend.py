@@ -201,8 +201,9 @@ def newregister():
         email = data.get('email')
         birthdate = data.get('birthdate')
         password = data.get('password')
+        grade = data.get('grade')
 
-        if not all([username, email, birthdate, password]):
+        if not all([username, email, birthdate, password, grade]):
             send_embed_to_discord("Registration Failed", f"Missing fields for email: {email}")
             return jsonify({"message": "All fields are required"}), 400
 
@@ -221,6 +222,7 @@ def newregister():
         users[email] = {
             "username": username,
             "birthdate": birthdate,
+            "grade": grade,
             "password": hashed_password,
             "ProfilePicture": get_default_profile_picture(),
             "ProfilePictureFileID": "",
@@ -229,8 +231,8 @@ def newregister():
         }
         
         save_json(USERS_FILE, users)
-        print(f"New user registered: {username} ({email})")
-        send_embed_to_discord("Registration Successful", f"New user registered: {username} ({email})")
+        print(f"New user registered: {username} ({email}), Grade: {grade}")
+        send_embed_to_discord("Registration Successful", f"New user registered: {username} ({email}), Grade: {grade}")
 
         return jsonify({"message": "Registration successful!"}), 200
 
