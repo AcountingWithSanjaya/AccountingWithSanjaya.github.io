@@ -4,87 +4,57 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AW - Teacher Lobby</title>
+    <title>AW - Teacher Hub</title>
     <link rel="stylesheet" href="./css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   </head>
   <body>
     <div id="app">
+      <!-- Header -->
       <header class="header">
         <div class="header-content">
-          <div class="logo">TeacherHub</div>
+          <div class="logo">Accounting World</div>
           <nav class="nav">
             <a href="#dashboard" class="active" data-page="dashboard">Dashboard</a>
             <a href="#recordings" data-page="recordings">Recordings</a>
             <a href="#schedule" data-page="schedule">Schedule Classes</a>
             <a href="#papers" data-page="papers">Papers</a>
           </nav>
+          
           <div class="user-profile">
-            <span class="user-name">Jane Doe</span>
-            <div class="avatar">JD</div>
-          </div>
+            <a href="../Student Lobby/Profile.html"></a>
+              <span class="user-name" ></span>
+              <div class="avatar" ></div>
+            </a>
+              </div>
         </div>
       </header>
 
+      <!-- Main Content -->
       <main class="main-content">
         <div id="dashboard-page" class="page active">
           <h1 class="page-title">Teacher Dashboard</h1>
-          
-          <div class="dashboard-stats">
-            <div class="stat-card">
-              <div class="stat-icon"><i class="fas fa-video"></i></div>
-              <div class="stat-content">
-                <h3>Pending Recordings</h3>
-                <p class="stat-value">5</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon"><i class="fas fa-calendar"></i></div>
-              <div class="stat-content">
-                <h3>Upcoming Classes</h3>
-                <p class="stat-value">8</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
-              <div class="stat-content">
-                <h3>Papers to Grade</h3>
-                <p class="stat-value">12</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon"><i class="fas fa-users"></i></div>
-              <div class="stat-content">
-                <h3>Total Students</h3>
-                <p class="stat-value">87</p>
-              </div>
-            </div>
-          </div>
-
+          <div class="dashboard-stats"></div>
           <div class="dashboard-content">
             <div class="dashboard-section">
               <div class="section-header">
                 <h2>Pending Recordings</h2>
                 <a href="#recordings" class="view-all">View All</a>
               </div>
-              <div class="recordings-grid dashboard-grid">
-              </div>
+              <div class="recordings-grid dashboard-grid"></div>
             </div>
-            
             <div class="dashboard-section">
               <div class="section-header">
                 <h2>Upcoming Classes</h2>
                 <a href="#schedule" class="view-all">View All</a>
               </div>
-              <div class="upcoming-classes-container">
-              </div>
+              <div class="upcoming-classes-container"></div>
             </div>
           </div>
         </div>
 
         <div id="recordings-page" class="page">
           <h1 class="page-title">Class Recordings</h1>
-          
           <div class="recordings-container">
             <div class="filters-card">
               <h2>Filters</h2>
@@ -92,10 +62,6 @@
                 <label for="course-filter">Course</label>
                 <select id="course-filter" class="filter-select">
                   <option value="all">All Courses</option>
-                  <option value="math101">Mathematics 101</option>
-                  <option value="phys201">Physics 201</option>
-                  <option value="chem101">Chemistry 101</option>
-                  <option value="bio302">Biology 302</option>
                 </select>
               </div>
               <div class="form-group">
@@ -120,30 +86,29 @@
                 <i class="fas fa-filter"></i> Apply Filters
               </button>
             </div>
-            
             <div class="recordings-list-card">
               <h2>Pending Recordings</h2>
-              <div class="recordings-grid">
-              </div>
+              <div class="recordings-grid"></div>
             </div>
           </div>
         </div>
 
         <div id="schedule-page" class="page">
           <h1 class="page-title">Schedule Classes</h1>
-          
           <div class="schedule-container">
             <div class="schedule-sidebar">
               <div class="calendar-card">
                 <div class="month-navigator">
-                  <button class="month-nav-btn" id="prev-month"><i class="fas fa-chevron-left"></i></button>
-                  <h2 id="current-month">September 2023</h2>
-                  <button class="month-nav-btn" id="next-month"><i class="fas fa-chevron-right"></i></button>
+                  <button class="month-nav-btn" id="prev-month">
+                    <i class="fas fa-chevron-left"></i>
+                  </button>
+                  <h2 id="current-month"></h2>
+                  <button class="month-nav-btn" id="next-month">
+                    <i class="fas fa-chevron-right"></i>
+                  </button>
                 </div>
-                <div class="calendar-grid" id="calendar-grid">
-                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
               </div>
-              
               <div class="schedule-form-card">
                 <h2>Schedule New Class</h2>
                 <form id="schedule-form">
@@ -155,10 +120,6 @@
                     <label for="class-course">Course</label>
                     <select id="class-course" class="form-select" required>
                       <option value="">Select a course</option>
-                      <option value="math101">Mathematics 101</option>
-                      <option value="phys201">Physics 201</option>
-                      <option value="chem101">Chemistry 101</option>
-                      <option value="bio302">Biology 302</option>
                     </select>
                   </div>
                   <div class="form-row">
@@ -185,21 +146,16 @@
                 </form>
               </div>
             </div>
-            
             <div class="schedule-main">
               <div class="schedule-tabs">
                 <button class="tab-btn active" data-tab="upcoming">Upcoming Classes</button>
                 <button class="tab-btn" data-tab="past">Past Classes</button>
               </div>
-              
               <div class="tab-content active" id="upcoming-tab">
-                <div class="class-list" id="upcoming-classes">
-                </div>
+                <div class="class-list" id="upcoming-classes"></div>
               </div>
-              
               <div class="tab-content" id="past-tab">
-                <div class="class-list" id="past-classes">
-                </div>
+                <div class="class-list" id="past-classes"></div>
               </div>
             </div>
           </div>
@@ -207,7 +163,6 @@
 
         <div id="papers-page" class="page">
           <h1 class="page-title">Papers & Documents</h1>
-          
           <div class="papers-container">
             <div class="papers-sidebar">
               <div class="upload-card">
@@ -219,33 +174,23 @@
                   <label for="file-input" class="upload-btn">Browse Files</label>
                   <input type="file" id="file-input" multiple class="hidden">
                 </div>
-                <div class="upload-list" id="upload-list">
-                </div>
+                <div class="upload-list" id="upload-list"></div>
                 <button class="cta-button upload-submit-btn" id="upload-submit-btn" disabled>
                   <i class="fas fa-paper-plane"></i> Upload Files
                 </button>
               </div>
-              
               <div class="filters-card">
                 <h2>Filter Documents</h2>
                 <div class="form-group">
                   <label for="doc-type-filter">Document Type</label>
                   <select id="doc-type-filter" class="filter-select">
                     <option value="all">All Types</option>
-                    <option value="assignment">Assignments</option>
-                    <option value="syllabus">Syllabus</option>
-                    <option value="exam">Exams</option>
-                    <option value="other">Other</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label for="doc-course-filter">Course</label>
                   <select id="doc-course-filter" class="filter-select">
                     <option value="all">All Courses</option>
-                    <option value="math101">Mathematics 101</option>
-                    <option value="phys201">Physics 201</option>
-                    <option value="chem101">Chemistry 101</option>
-                    <option value="bio302">Biology 302</option>
                   </select>
                 </div>
                 <div class="form-group">
@@ -262,7 +207,6 @@
                 </button>
               </div>
             </div>
-            
             <div class="papers-main">
               <div class="papers-header">
                 <div class="papers-search">
@@ -274,12 +218,8 @@
                   <button class="view-btn" data-view="list"><i class="fas fa-list"></i></button>
                 </div>
               </div>
-              
-              <div class="papers-grid active" id="papers-grid">
-              </div>
-              
-              <div class="papers-list" id="papers-list">
-              </div>
+              <div class="papers-grid active" id="papers-grid"></div>
+              <div class="papers-list" id="papers-list"></div>
             </div>
           </div>
         </div>
@@ -289,8 +229,8 @@
       <footer class="footer">
         <div class="footer-content">
           <div class="footer-section">
-            <h3>TeacherHub</h3>
-            <p>Making education management easier for teachers around the world.</p>
+            <h3>Accounting World</h3>
+            <p>Teach the Language of Business. Keep it up sir.</p>
           </div>
           <div class="footer-section">
             <h3>Quick Links</h3>
@@ -316,10 +256,11 @@
           </div>
         </div>
         <div class="footer-bottom">
-          <p>&copy; 2023 TeacherHub. All rights reserved.</p>
+          <p>&copy; 2025 Accounting World. All rights reserved.</p>
         </div>
       </footer>
 
+      <!-- Modals -->
       <div class="modal" id="upload-recording-modal">
         <div class="modal-content">
           <span class="close-modal" id="close-upload-modal">&times;</span>
@@ -333,10 +274,6 @@
               <label for="recording-course">Course</label>
               <select id="recording-course" class="form-select" required>
                 <option value="">Select a course</option>
-                <option value="math101">Mathematics 101</option>
-                <option value="phys201">Physics 201</option>
-                <option value="chem101">Chemistry 101</option>
-                <option value="bio302">Biology 302</option>
               </select>
             </div>
             <div class="form-group">
@@ -381,10 +318,10 @@
     <div class="loading-overlay" id="loading-overlay">
       <div class="loading-content">
         <div class="spinner"></div>
-        <p class="loading-text">Loading TeacherHub</p>
+        <p class="loading-text">Loading AW - Teacher's Hub</p>
         <p class="loading-subtext">Please wait...</p>
       </div>
-    </div> 
+    </div>
 
     <script type="module" src="./js/main.js"></script>
   </body>

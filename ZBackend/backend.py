@@ -628,7 +628,6 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    # Only respond to DMs from allowed users
     if not message.guild and str(message.author.id) in ALLOWED_USERS:
         args = [arg.strip() for arg in message.content.split('|')]
         
@@ -661,7 +660,321 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+
+
+
+
+
+
+
+# PANEL LOADING ----------------------------
+
+def upload_to_drive(file_data, filename, mime_type):
+    try:
+        file_metadata = {
+            'name': filename,
+            'parents': [FOLDER_ID]
+        }
+        
+        media = MediaIoBaseUpload(
+            io.BytesIO(file_data),
+            mimetype=mime_type,
+            resumable=True
+        )
+        
+        file = drive_service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id, webViewLink'
+        ).execute()
+        
+        return file.get('webViewLink')
+        
+    except Exception as e:
+        print(f"Drive upload error: {str(e)}")
+        raise
+
+def get_user_count():
+    users = load_json('users.json')
+    return len(users)
+
+def load_data():
+    return {
+        'users': load_json('users.json'),
+        'courses': load_json('courses.json')
+    }
+
+def generate_classes():
+    today = datetime.datetime.now()
+    
+    upcoming = [{
+        "id": "class1",
+        "title": "Derivatives and Applications",
+        "course": "Mathematics 101",
+        "date": (today + datetime.timedelta(days=2)).strftime("%Y-%m-%d"),
+        "startTime": "10:00",
+        "endTime": "11:30",
+        "duration": 90,
+        "room": "Room 101",
+        "studentsEnrolled": get_user_count(),
+        "description": "Introduction to derivatives and their applications."
+    }]
+    
+    past = [{
+        "id": "pastclass1",
+        "title": "Introduction to Calculus",
+        "course": "Mathematics 101",
+        "date": (today - datetime.timedelta(days=2)).strftime("%Y-%m-%d"),
+        "startTime": "10:00",
+        "endTime": "11:30",
+        "duration": 90,
+        "room": "Room 101",
+        "studentsAttended": get_user_count() - 2,
+        "description": "Fundamentals of calculus."
+    }]
+    
+    return {"upcoming": upcoming, "past": past}
+
+def generate_recordings():
+    return [{
+        "id": "rec1",
+        "title": "Introduction to Calculus",
+        "course": "Mathematics 101",
+        "date": (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
+        "duration": "01:30:00",
+        "status": "pending",
+        "studentsAttended": get_user_count() - 2
+    }]
+
+def generate_papers():
+    return [{
+        "id": "doc1",
+        "title": "Calculus Syllabus",
+        "type": "syllabus",
+        "course": "Mathematics 101",
+        "uploadDate": (datetime.datetime.now() - datetime.timedelta(days=5)).strftime("%Y-%m-%d"),
+        "size": "256 KB",
+        "format": "pdf"
+    }]
+
+@app.route('/api/auth/verify', methods=['POST'])
+def verify_auth():
+    data = request.json
+    email = data.get('email')
+    token = data.get('token')
+    
+    users = load_json('users.json')
+    if email in users and token == "mock-token":
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 401
+
+@app.route('/api/teacher/data', methods=['POST'])
+def get_teacher_data():
+    data = request.json
+    email = data.get('email')
+    token = data.get('token')
+    
+    users = load_json('users.json')
+    if email not in users or token != "mock-token":
+        return jsonify({"status": "error"}), 401
+    
+    stats = {
+        "pendingRecordings": 1,
+        "upcomingClasses": 1,
+        "papersToGrade": 5,
+        "totalStudents": get_user_count()
+    }
+    
+    return jsonify({
+        "status": "success",
+        "stats": stats,
+        "recordings": generate_recordings(),
+        "classes": generate_classes(),
+        "papers": generate_papers()
+    })
+
+
+
+@app.route('/confirmteacherloggedin', methods=['POST'])
+def confirm_teacher_logged_in():
+    data = request.json
+    email = data.get('email')
+    token = data.get('token')
+    
+    if not email or not token:
+        return jsonify({"message": "Missing credentials"}), 400
+        
+    if email != 'ssjayasundara@yahoo.com0':
+        return jsonify({"message": "Not authorized"}), 401
+        
+    if not verify_token(email, token):
+        return jsonify({"message": "Invalid token"}), 401
+        
+    return jsonify({"message": "Authorized"}), 200
+
+@app.route('/loadteacher', methods=['POST'])
+def load_teacher():
+    data = request.json
+    email = data.get('email')
+    token = data.get('token')
+    
+    if email != 'ssjayasundara@yahoo.com0':
+        return jsonify({"message": "Not authorized"}), 401
+        
+    if not verify_token(email, token):
+        return jsonify({"message": "Unauthorized"}), 401
+    
+    classes_data = load_json('classes.json')
+    recordings_data = load_json('recordings.json')
+    papers_data = load_json('papers.json')
+    
+    # Calculate stats
+    pending_recordings = sum(1 for rec in recordings_data['recordings'] 
+                           if rec['status'] == 'pending')
+    upcoming_classes = sum(1 for cls in classes_data['classes'] 
+                         if datetime.strptime(cls['date'], '%Y-%m-%d') > datetime.now())
+    
+    return jsonify({
+        "stats": {
+            "pendingRecordings": pending_recordings,
+            "upcomingClasses": upcoming_classes,
+            "papersToGrade": len(papers_data['papers']),
+            "totalStudents": sum(cls['studentsEnrolled'] for cls in classes_data['classes'])
+        },
+        "recordings": recordings_data['recordings'],
+        "classes": {
+            "upcoming": [cls for cls in classes_data['classes'] 
+                        if datetime.strptime(cls['date'], '%Y-%m-%d') > datetime.now()],
+            "past": [cls for cls in classes_data['classes'] 
+                    if datetime.strptime(cls['date'], '%Y-%m-%d') <= datetime.now()]
+        },
+        "papers": papers_data['papers']
+    })
+
+@app.route('/upload/recording', methods=['POST'])
+def upload_recording():
+    email = request.form.get('email')
+    token = request.form.get('token')
+    
+    if email != 'ssjayasundara@yahoo.com0' or not verify_token(email, token):
+        return jsonify({"message": "Unauthorized"}), 401
+    
+    if 'file' not in request.files:
+        return jsonify({"message": "No file provided"}), 400
+        
+    file = request.files['file']
+    recording_id = request.form.get('recordingId')
+    
+    recordings = load_json('recordings.json')
+    recording = next((r for r in recordings['recordings'] if r['id'] == recording_id), None)
+    
+    if not recording:
+        return jsonify({"message": "Recording not found"}), 404
+    
+    try:
+        drive_link = upload_to_drive(
+            file.read(),
+            f"recording_{recording_id}_{file.filename}",
+            file.content_type
+        )
+        
+        recording['status'] = 'uploaded'
+        recording['driveLink'] = drive_link
+        save_json('recordings.json', recordings)
+        
+        return jsonify({
+            "message": "Recording uploaded successfully",
+            "driveLink": drive_link
+        })
+        
+    except Exception as e:
+        return jsonify({"message": f"Upload failed: {str(e)}"}), 500
+
+@app.route('/upload/paper', methods=['POST'])
+def upload_paper():
+    email = request.form.get('email')
+    token = request.form.get('token')
+    
+    if email != 'ssjayasundara@yahoo.com0' or not verify_token(email, token):
+        return jsonify({"message": "Unauthorized"}), 401
+    
+    if 'file' not in request.files:
+        return jsonify({"message": "No file provided"}), 400
+        
+    file = request.files['file']
+    paper_data = json.loads(request.form.get('data'))
+    
+    papers = load_json('papers.json')
+    
+    try:
+        drive_link = upload_to_drive(
+            file.read(),
+            f"paper_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}",
+            file.content_type
+        )
+        
+        new_paper = {
+            "id": f"doc{len(papers['papers']) + 1}",
+            "title": paper_data['title'],
+            "type": paper_data['type'],
+            "course": paper_data['course'],
+            "uploadDate": datetime.now().strftime('%Y-%m-%d'),
+            "size": f"{len(file.read()) / 1024:.0f} KB",
+            "format": file.filename.split('.')[-1].lower(),
+            "driveLink": drive_link
+        }
+        
+        papers['papers'].append(new_paper)
+        save_json('papers.json', papers)
+        
+        return jsonify({
+            "message": "Paper uploaded successfully",
+            "paper": new_paper
+        })
+        
+    except Exception as e:
+        return jsonify({"message": f"Upload failed: {str(e)}"}), 500
+
+
+
+# PANEL LOADING ----------------------------
+
+
+
 if __name__ == '__main__':
+
+
+
+    os.makedirs('sirdata', exist_ok=True)
+    
+    if not os.path.exists('data/users.json'):
+        initial_users = {
+            "teacher@example.com": {
+                "id": "1",
+                "email": "teacher@example.com",
+                "name": "John Doe"
+            }
+        }
+        save_json(initial_users, 'users.json')
+    
+    # Initialize courses.json if it doesn't exist
+    if not os.path.exists('data/courses.json'):
+        initial_courses = {
+            "1": {
+                "id": "1",
+                "teacher_id": "1",
+                "title": "Mathematics 101",
+                "description": "Introduction to Calculus"
+            },
+            "2": {
+                "id": "2",
+                "teacher_id": "1",
+                "title": "Physics 201",
+                "description": "Classical Mechanics"
+            }
+        }
+        save_json(initial_courses, 'courses.json')
+
     import threading
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()

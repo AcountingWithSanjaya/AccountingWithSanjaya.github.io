@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load teacher data
     const teacherData = await loadTeacherData();
     
+    // Set user name in header
+    document.querySelector('.user-name').textContent = 'Teacher';
+    document.querySelector('.avatar').textContent = 'T';
+    
     // Initialize components with data from API
     initNavigation();
     initDashboard(teacherData);
@@ -23,9 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initPapers(teacherData.papers);
 
   } catch (error) {
-    console.error('Authentication failed:', error);
-    window.location.href = '/login.html';
-    return;
+    console.error('Error initializing application:', error);
   } finally {
     // Hide loading overlay
     setTimeout(() => {
