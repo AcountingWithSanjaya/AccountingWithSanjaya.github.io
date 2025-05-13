@@ -1,4 +1,4 @@
-const RECORDINGS_API_URL = 'http://helya.pylex.xyz:10209/loadrecordings';
+const RECORDINGS_API_URL = 'http://helya.pylex.xyz:10209/loadrecordings'; // Backend endpoint
 
 let allRecordings = [];
 let filteredRecordings = [];
@@ -162,9 +162,15 @@ function createRecordingCard(recording) {
   downloadButton.className = 'download-button';
   downloadButton.textContent = 'Download Recording';
   downloadButton.addEventListener('click', () => {
-    import('./downloadManager.js').then(module => {
-      module.downloadRecording(recording);
-    });
+    // For Google Drive links, a direct link is usually enough.
+    if (recording.link) {
+        window.open(recording.link, '_blank');
+    } else {
+        // Fallback to downloadManager if it's intended for specific file types or backend-served files
+        import('./downloadManager.js').then(module => {
+            module.downloadRecording(recording); // downloadManager needs to handle this
+        }).catch(err => console.error("Failed to load download manager", err));
+    }
   });
   
   infoDiv.appendChild(subjectDetail);

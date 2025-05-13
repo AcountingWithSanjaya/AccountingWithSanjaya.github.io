@@ -21,9 +21,12 @@ intents = discord.Intents.default()
 intents.messages = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 SIGNUP_CHANNEL_ID = 1302608005744955443
-USERS_FILE = 'users.json'
-SESSIONS_FILE = 'sessions.json'
-MUSIC_FILE = 'music.json'
+USERS_FILE = 'users.json' # Assuming this is in ZBackend/
+SESSIONS_FILE = 'sessions.json' # Assuming this is in ZBackend/
+CLASSES_FILE = 'classes.json' # Assuming this is in ZBackend/
+PAPERS_FILE = 'papers.json' # Assuming this is in ZBackend/
+RECORDINGS_FILE = 'recordings.json' # Assuming this is in ZBackend/
+# MUSIC_FILE = 'music.json' # Not used in this request
 
 # PayHere Configuration
 PAYHERE_MERCHANT_ID = os.getenv('PAYHERE_MERCHANT_ID', 'YOUR_SANDBOX_MERCHANT_ID')
@@ -41,21 +44,27 @@ NOTIFY_URL_BASE = os.getenv('BACKEND_NOTIFY_URL_BASE', 'http://helya.pylex.xyz:1
 def load_json(file):
     try:
         with open(file, 'r') as f:
+            # For users.json, ensure it's a dict keyed by email.
+            # For other files like classes.json, papers.json, recordings.json, they might have a root key (e.g., "classes": [...])
             data = json.load(f)
-            if isinstance(data, list):
-                converted_data = {}
-                for user in data:
-                    converted_data[user['email']] = {
-                        'username': user['username'],
-                        'birthdate': user['birthdate'],
-                        'password': user['password'],
-                        'ProfilePicture': user.get('ProfilePicture', []),
-                    }
-                save_json(file, converted_data)  
-                return converted_data
-            return data if isinstance(data, dict) else {}
+            if file == USERS_FILE:
+                if isinstance(data, list): # Old format conversion
+                    converted_data = {}
+                    for user_entry in data:
+                        if 'email' in user_entry:
+                            converted_data[user_entry['email']] = user_entry
+                    save_json(file, converted_data)
+                    return converted_data
+                return data if isinstance(data, dict) else {}
+            return data # For other JSON files, return as is
     except (FileNotFoundError, json.JSONDecodeError):
-        save_json(file, {})
+        if file == USERS_FILE:
+            save_json(file, {})
+            return {}
+        # For other files, it might be appropriate to return a default structure
+        if file == CLASSES_FILE: return {"classes": []}
+        if file == PAPERS_FILE: return {"papers": []}
+        if file == RECORDINGS_FILE: return {"recordings": []}
         return {}
 
 def save_json(file, data):
@@ -157,8 +166,13 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_default_profile_picture():
-    with open('./Images/defaultpfp.png', 'rb') as img_file:
-        return f"data:image/png;base64,{base64.b64encode(img_file.read()).decode('utf-8')}"
+    # Adjusted path assuming backend.py is in ZBackend
+    try:
+        with open('../Images/defaultpfp.png', 'rb') as img_file:
+            return f"data:image/png;base64,{base64.b64encode(img_file.read()).decode('utf-8')}"
+    except FileNotFoundError:
+        print("Default profile picture not found at ../Images/defaultpfp.png")
+        return "" # Return empty or a placeholder if not found
 
 def get_or_create_user_subfolder(email):
     query = f"'{FOLDER_ID}' in parents and name='{email}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
@@ -224,9 +238,13 @@ def newregister():
             "birthdate": birthdate,
             "grade": grade,
             "password": hashed_password,
-            "ProfilePicture": get_default_profile_picture(),
-            "ProfilePictureFileID": "",
+            "birthdate": birthdate,
+            "grade": grade,
+            "password": hashed_password,
+            "profileImage": get_default_profile_picture(), # Changed key for consistency
+            "profileImageFileID": "", # Changed key
             "credits": 0,
+            "enrolled_classes": [], # Initialize enrolled_classes
             "createdAt": datetime.utcnow().isoformat()
         }
         
@@ -320,16 +338,18 @@ def get_profile():
         if not user:
             return jsonify({"message": "User not found"}), 404
         
-        hashed_password = user.get('password')
-        password_length = len(check_password_hash(hashed_password, 'dummy') * '*') if hashed_password else 0
-        
-        return jsonify({
-            "username": user['username'],
+        # Ensure keys match what frontend profile.js expects
+        profile_data = {
+            "username": user.get('username'),
+            "fullName": user.get('username'), # Assuming username is fullname
             "email": email,
-            "birthday": user['birthdate'],
-            "passwordLength": '*' * password_length,
-            "ProfilePicture": user.get('ProfilePicture') or get_default_profile_picture(),
-        }), 200
+            "birthdate": user.get('birthdate'),
+            "grade": user.get('grade'),
+            "credits": user.get('credits', 0),
+            "profileImage": user.get('profileImage') or user.get('ProfilePicture') or get_default_profile_picture(),
+            # "passwordLength": len(user.get('password', '')) # Avoid sending password info
+        }
+        return jsonify(profile_data), 200
 
     except Exception as e:
         print(f"Error fetching profile: {e}")
@@ -369,10 +389,15 @@ def update_profile_picture():
         if email not in user_data:
             user_data[email] = {}
 
-        user_data[email]["ProfilePicture"] = file_url
-        user_data[email]["ProfilePictureFileID"] = file_id
-        with open(USERS_JSON_PATH, 'w') as f:
-            json.dump(user_data, f, indent=4)
+        user_data = load_json(USERS_FILE) # Use consistent load_json
+
+        if email not in user_data:
+            return jsonify({"message": "User not found"}), 404
+
+        user_data[email]["profileImage"] = file_url # Changed key
+        user_data[email]["profileImageFileID"] = file_id # Changed key
+        
+        save_json(USERS_FILE, user_data) # Use consistent save_json
 
         return jsonify({
             "message": "Profile picture updated successfully",
@@ -429,116 +454,193 @@ def handle_form():
         return jsonify({'message': f'Error sending message: {str(e)}'}), 500
 
 
-CLASSES_FILE = 'classes.json'
-ALLOWED_USERS = os.getenv('ALLOWED_USERS', '').split(',')
+# Assuming CLASSES_FILE is defined at the top of the file
+# ALLOWED_USERS = os.getenv('ALLOWED_USERS', '').split(',') # This seems for bot commands, not API
 
-def load_classes():
-    try:
-        with open(CLASSES_FILE, 'r') as f:
-            return json.load(f)['classes']
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
+def load_all_classes_from_file():
+    data = load_json(CLASSES_FILE)
+    return data.get('classes', [])
 
-def save_classes(classes):
-    with open(CLASSES_FILE, 'w') as f:
-        json.dump({'classes': classes}, f, indent=2)
+def save_all_classes_to_file(classes_list):
+    save_json(CLASSES_FILE, {'classes': classes_list})
 
-@app.route('/schedule')
+@app.route('/schedule', methods=['GET']) # For schedule.html
 def get_schedule():
     try:
-        classes = load_classes()
-        return jsonify(classes)
+        auth_header = request.headers.get('Authorization')
+        token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
+        email = request.args.get('email') or request.headers.get('X-User-Email')
+
+        if not email or not token or not verify_token(email, token):
+            return jsonify({"message": "Unauthorized"}), 401
+            
+        all_classes = load_all_classes_from_file()
+        
+        # Filter for upcoming week (next 7 days)
+        today = datetime.now().date()
+        one_week_later = today + timedelta(days=7)
+        
+        weekly_schedule = []
+        for cls in all_classes:
+            try:
+                class_date = datetime.strptime(cls.get('date'), "%Y-%m-%d").date()
+                if today <= class_date < one_week_later:
+                    weekly_schedule.append(cls)
+            except (ValueError, TypeError):
+                # Skip classes with invalid date format or missing date
+                continue
+        
+        return jsonify(sorted(weekly_schedule, key=lambda x: (x.get('date', ''), x.get('time', ''))))
     except Exception as e:
-        return jsonify({'error': 'Failed to fetch classes'}), 500
-    
+        print(f"Error fetching schedule: {e}")
+        return jsonify({'error': 'Failed to fetch schedule'}), 500
 
+@app.route('/api/classes', methods=['GET']) # For classes.html (My Classes)
+def get_classes_for_user_grade():
+    try:
+        auth_header = request.headers.get('Authorization')
+        token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
+        email = request.args.get('email') or request.headers.get('X-User-Email')
 
-@app.route('/api/classes', methods=['GET'])
-def get_classes():
-    classes = load_classes()
-    return jsonify(classes)
+        if not email or not token or not verify_token(email, token):
+            return jsonify({"message": "Unauthorized"}), 401
+
+        users = load_json(USERS_FILE)
+        user = users.get(email)
+        if not user or 'grade' not in user:
+            return jsonify({"message": "User grade not found"}), 404
+
+        user_grade = user['grade']
+        all_classes = load_all_classes_from_file()
+        
+        # Filter classes by user's grade and ensure they are upcoming
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        grade_classes = [
+            cls for cls in all_classes 
+            if cls.get('grade') == user_grade and cls.get('date', '0000-00-00') >= today_str
+        ]
+        
+        return jsonify(sorted(grade_classes, key=lambda x: (x.get('date', ''), x.get('time', ''))))
+    except Exception as e:
+        print(f"Error fetching classes by grade: {e}")
+        return jsonify({'error': 'Failed to fetch classes for your grade'}), 500
 
 @app.route('/api/user/credits', methods=['GET'])
 def get_user_credits():
     email = request.args.get('email')
-    token = request.headers.get('Authorization')
+    auth_header = request.headers.get('Authorization')
+    token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
     
-    if not email or not token:
+    if not email or not token or not verify_token(email, token): # Added token verification
         return jsonify({"error": "Unauthorized"}), 401
     
-    users_data = load_users()
-    user = next((user for user in users_data['users'] if user['email'] == email), None)
+    users = load_json(USERS_FILE) # Use consistent load_json
+    user = users.get(email)
     
     if not user:
         return jsonify({"error": "User not found"}), 404
         
-    return jsonify({"credits": user['credits']})
+    return jsonify({"credits": user.get('credits', 0)})
 
 @app.route('/api/class/join', methods=['POST'])
 def join_class():
     data = request.json
     email = data.get('email')
-    class_id = data.get('classId')
-    token = request.headers.get('Authorization')
+    class_id_str = data.get('classId') # classId is string like "c1"
+    auth_header = request.headers.get('Authorization')
+    token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
     
-    if not email or not token or not class_id:
-        return jsonify({"error": "Invalid request"}), 400
+    if not email or not token or not class_id_str or not verify_token(email, token):
+        return jsonify({"error": "Invalid request or unauthorized"}), 400
         
-    users_data = load_users()
-    classes = load_classes()
+    users = load_json(USERS_FILE)
+    all_classes = load_all_classes_from_file()
     
-    user = next((user for user in users_data['users'] if user['email'] == email), None)
-    class_info = next((c for c in classes if c['id'] == class_id), None)
+    user = users.get(email)
+    class_info = next((c for c in all_classes if c.get('id') == class_id_str), None)
     
     if not user:
         return jsonify({"error": "User not found"}), 404
     if not class_info:
         return jsonify({"error": "Class not found"}), 404
-    if user['credits'] <= 0:
+    
+    if user.get('credits', 0) <= 0:
         return jsonify({"error": "Insufficient credits"}), 400
+    
+    if 'enrolled_classes' not in user:
+        user['enrolled_classes'] = []
         
-    if class_id in user['enrolled_classes']:
+    if class_id_str in user['enrolled_classes']:
         return jsonify({
             "message": "Already enrolled",
-            "zoom_link": class_info['zoom_link']
+            "zoom_link": class_info.get('zoomLink'),
+            "remaining_credits": user.get('credits',0)
         })
         
-    user['credits'] -= 1
-    user['enrolled_classes'].append(class_id)
-    save_users(users_data)
+    user['credits'] = user.get('credits', 0) - 1
+    user['enrolled_classes'].append(class_id_str)
+    save_json(USERS_FILE, users)
     
     return jsonify({
         "message": "Successfully enrolled",
-        "zoom_link": class_info['zoom_link'],
-        "remaining_credits": user['credits']
+        "zoom_link": class_info.get('zoomLink'),
+        "remaining_credits": user.get('credits')
     })
 
 @app.route('/api/class/zoom-link', methods=['GET'])
 def get_zoom_link():
     email = request.args.get('email')
-    class_id = int(request.args.get('classId'))
-    token = request.headers.get('Authorization')
+    class_id_str = request.args.get('classId') # classId is string
+    auth_header = request.headers.get('Authorization')
+    token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
     
-    if not email or not token or not class_id:
-        return jsonify({"error": "Invalid request"}), 400
+    if not email or not token or not class_id_str or not verify_token(email, token):
+        return jsonify({"error": "Invalid request or unauthorized"}), 400
         
-    users_data = load_users()
-    classes = load_classes()
+    users = load_json(USERS_FILE)
+    all_classes = load_all_classes_from_file()
     
-    user = next((user for user in users_data['users'] if user['email'] == email), None)
-    class_info = next((c for c in classes if c['id'] == class_id), None)
+    user = users.get(email)
+    class_info = next((c for c in all_classes if c.get('id') == class_id_str), None)
     
     if not user or not class_info:
-        return jsonify({"error": "Not found"}), 404
+        return jsonify({"error": "User or Class not found"}), 404
         
-    if class_id not in user['enrolled_classes']:
+    if class_id_str not in user.get('enrolled_classes', []):
         return jsonify({"error": "Not enrolled in this class"}), 403
+    
+    # Check if class is within 30 mins of starting or has started (up to 1.5 hours after start)
+    try:
+        class_datetime_str = f"{class_info.get('date')} {class_info.get('time')}"
+        # Handle potential AM/PM format if present, otherwise assume 24-hour
+        time_format = "%Y-%m-%d %H:%M"
+        if "AM" in class_datetime_str.upper() or "PM" in class_datetime_str.upper():
+            time_format = "%Y-%m-%d %I:%M %p" # Example: 2023-10-05 02:30 PM
         
-    class_datetime = datetime.strptime(f"{class_info['date']} {class_info['time']}", "%Y-%m-%d %I:%M %p")
-    if datetime.now() > class_datetime + timedelta(hours=1, minutes=30):
-        return jsonify({"error": "Class has expired"}), 410
+        class_start_time = datetime.strptime(class_datetime_str, time_format)
+        now = datetime.now()
         
-    return jsonify({"zoom_link": class_info['zoom_link']})
+        # Allow access 30 mins before and up to, say, 2 hours after start (typical class duration)
+        if not (class_start_time - timedelta(minutes=30) <= now <= class_start_time + timedelta(hours=2)):
+             return jsonify({"error": "Class link is not active yet or has expired."}), 403 # Forbidden to access yet/anymore
+
+    except ValueError:
+        return jsonify({"error": "Invalid class date/time format in data."}), 500
+        
+    return jsonify({"zoom_link": class_info.get('zoomLink')})
+
+
+@app.route('/loadpapers', methods=['GET'])
+def get_all_papers():
+    # No authentication for papers, as per "anyone can download"
+    papers_data = load_json(PAPERS_FILE)
+    return jsonify(papers_data.get('papers', []))
+
+@app.route('/loadrecordings', methods=['GET'])
+def get_all_recordings():
+    # No authentication for recordings
+    recordings_data = load_json(RECORDINGS_FILE)
+    return jsonify(recordings_data.get('recordings', []))
 
 
 

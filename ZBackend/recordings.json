@@ -1,0 +1,37 @@
+{
+  "recordings": [
+    {
+      "id": "r1",
+      "title": "Lecture 1: Debits and Credits",
+      "year": "2023",
+      "grade": "Grade 10",
+      "link": "https://drive.google.com/file/d/examplerecording1/view?usp=sharing",
+      "subject": "Accounting",
+      "date": "2023-10-01",
+      "duration": "45:17",
+      "filename": "Lecture1_Debits_Credits.mp4"
+    },
+    {
+      "id": "r2",
+      "title": "Business Ethics Seminar - Full Recording",
+      "year": "2023",
+      "grade": "Grade 11",
+      "link": "https://drive.google.com/file/d/examplerecording2/view?usp=sharing",
+      "subject": "Business Studies",
+      "date": "2023-10-05",
+      "duration": "01:12:30",
+      "filename": "Business_Ethics_Seminar.mp4"
+    },
+    {
+      "id": "r3",
+      "title": "Financial Ratios Explained",
+      "year": "2022",
+      "grade": "Grade 12",
+      "link": "https://drive.google.com/file/d/examplerecording3/view?usp=sharing",
+      "subject": "Accounting",
+      "date": "2022-11-15",
+      "duration": "55:02",
+      "filename": "Financial_Ratios.mp4"
+    }
+  ]
+}

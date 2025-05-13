@@ -1,16 +1,43 @@
-// const PAYHERE_CHECKOUT_URL = 'https://sandbox.payhere.lk/pay/checkout'; // Not directly used when using payhere.startPayment()
+// const PAYHERE_CHECKOUT_URL = 'https://sandbox.payhere.lk/pay/checkout';
+
+async function fetchAndDisplayUserCredits() {
+    const creditsBalanceElement = document.querySelector('.credit-balance h2');
+    if (!creditsBalanceElement) return;
+
+    const userEmail = localStorage.getItem('userEmail');
+    const authToken = localStorage.getItem('authToken');
+
+    if (!userEmail || !authToken) {
+        creditsBalanceElement.textContent = 'Log in to see credits';
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://helya.pylex.xyz:10209/api/user/credits?email=${userEmail}`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch credits');
+        }
+        const data = await response.json();
+        creditsBalanceElement.textContent = `Current Balance: ${data.credits} Credits`;
+    } catch (error) {
+        console.error('Error fetching credits:', error);
+        creditsBalanceElement.textContent = 'Current Balance: Error loading credits';
+    }
+}
 
 document.addEventListener("DOMContentLoaded", async function () {
   const loadingOverlay = document.getElementById("loading-overlay");
   
   if (loadingOverlay) {
-    // Show loading overlay
     loadingOverlay.classList.remove("hidden");
-    // Hide loading overlay after a short delay
     setTimeout(() => {
       loadingOverlay.classList.add("hidden");
     }, 300);
   }
+
+  await fetchAndDisplayUserCredits(); // Fetch credits on page load
 
   const purchaseButtons = document.querySelectorAll('.purchase-btn');
   const backendUrl = "http://helya.pylex.xyz:10209";

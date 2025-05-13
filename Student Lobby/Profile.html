@@ -41,21 +41,22 @@
                 <div class="profile-sidebar">
                     <div class="profile-header">
                         <img src="https://images.pexels.com/photos/2269872/pexels-photo-2269872.jpeg?auto=compress&cs=tinysrgb&w=150" alt="Profile Picture" class="profile-image">
-                        <h2 class="profile-name">John Doe</h2>
-                        <p class="profile-status">Premium Member</p>
+                        <img src="../Images/defaultpfp.png" alt="Profile Picture" class="profile-image">
+                        <h2 class="profile-name">Loading...</h2>
+                        <p class="profile-status">Student</p>
                     </div>
                     <div class="profile-stats">
                         <div class="stat-item">
-                            <i class="fas fa-star"></i>
-                            <span>Premium</span>
+                            <i class="fas fa-graduation-cap"></i>
+                            <span id="profile-grade">Grade: Loading...</span>
                         </div>
                         <div class="stat-item">
-                            <i class="fas fa-calendar"></i>
-                            <span>Member since 2023</span>
+                            <i class="fas fa-calendar-alt"></i>
+                            <span id="profile-member-since">Joined: Loading...</span>
                         </div>
                         <div class="stat-item">
                             <i class="fas fa-check-circle"></i>
-                            <span>Verified Account</span>
+                            <span>Verified Student</span>
                         </div>
                     </div>
                 </div>
@@ -64,62 +65,43 @@
                     <h1>Profile Information</h1>
                     
                     <div class="form-group">
-                        <label for="username">
-                            <i class="fas fa-user"></i>
-                            Username
-                        </label>
-                        <input type="text" id="username" value="johndoe" readonly class="bg-gray-50">
+                        <label for="username"><i class="fas fa-user"></i>Username</label>
+                        <input type="text" id="username" value="Loading..." readonly class="bg-gray-50">
                     </div>
                     
                     <div class="form-group">
-                        <label for="email">
-                            <i class="fas fa-envelope"></i>
-                            Email
-                        </label>
-                        <input type="email" id="email" value="john.doe@example.com" readonly class="bg-gray-50">
+                        <label for="email"><i class="fas fa-envelope"></i>Email</label>
+                        <input type="email" id="email" value="Loading..." readonly class="bg-gray-50">
                     </div>
                     
                     <div class="form-group">
-                        <label for="password">
-                            <i class="fas fa-lock"></i>
-                            Password
-                        </label>
+                        <label for="password"><i class="fas fa-lock"></i>Password</label>
                         <div class="inputForm">
                             <input type="password" id="password" value="********" readonly class="bg-gray-50">
                             <button type="button" class="toggle-password" aria-label="Toggle password visibility">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
-                        <button type="button" class="change-password-btn">
-                            Change Password
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
+                        <button type="button" class="change-password-btn">Change Password <i class="fas fa-arrow-right"></i></button>
                     </div>
                     
                     <div class="form-group">
-                        <label for="birthdate">
-                            <i class="fas fa-birthday-cake"></i>
-                            Birthdate
-                        </label>
-                        <input type="text" id="birthdate" value="May 15, 1990" readonly class="bg-gray-50">
+                        <label for="birthdate"><i class="fas fa-birthday-cake"></i>Birthdate</label>
+                        <input type="text" id="birthdate" value="Loading..." readonly class="bg-gray-50">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profile-page-grade"><i class="fas fa-graduation-cap"></i>Grade</label>
+                        <input type="text" id="profile-page-grade" value="Loading..." readonly class="bg-gray-50">
                     </div>
                     
                     <div class="form-group">
-                        <label for="credits">
-                            <i class="fas fa-coins"></i>
-                            Credits
-                        </label>
-                        <input type="text" id="credits" value="2,500 credits" readonly class="bg-gray-50">
+                        <label for="credits"><i class="fas fa-coins"></i>Credits</label>
+                        <input type="text" id="credits" value="Loading..." readonly class="bg-gray-50">
                         <div class="credits-info">
-                            <div class="credit-history">
-                                <span class="trend positive">
-                                    <i class="fas fa-arrow-up"></i>
-                                    +500 this month
-                                </span>
-                            </div>
-                            <button class="buy-credits-btn">
-                                Buy More Credits
-                                <i class="fas fa-plus-circle"></i>
+                            <!-- Credit history can be added later if needed -->
+                            <button class="buy-credits-btn" onclick="window.location.href='../Purchase/index.html'">
+                                Buy More Credits <i class="fas fa-plus-circle"></i>
                             </button>
                         </div>
                     </div>

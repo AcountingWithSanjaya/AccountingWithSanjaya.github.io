@@ -1,4 +1,4 @@
-const PAPERS_API_URL = 'http://helya.pylex.xyz:10209/loadpapers';
+const PAPERS_API_URL = 'http://helya.pylex.xyz:10209/loadpapers'; // Backend endpoint to fetch papers
 
 let allPapers = [];
 let filteredPapers = [];
@@ -151,9 +151,13 @@ function createPaperCard(paper) {
   downloadButton.className = 'download-button';
   downloadButton.textContent = 'Download';
   downloadButton.addEventListener('click', () => {
-    import('./downloadManager.js').then(module => {
-      module.downloadPaper(paper);
-    });
+    // For Google Drive links, a direct link is usually enough.
+    // The downloadManager might be for more complex scenarios or if files are served from backend.
+    if (paper.link) {
+      window.open(paper.link, '_blank');
+    } else {
+      alert('Download link is not available for this paper.');
+    }
   });
   
   card.appendChild(title);
