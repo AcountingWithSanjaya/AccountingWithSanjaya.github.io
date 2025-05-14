@@ -1,0 +1,25 @@
+{
+  "papers": [
+    {
+      "id": "p1",
+      "name": "Accounting Basics - Mock Exam 2023",
+      "year": "2023",
+      "grade": "Grade 10",
+      "link": "https://docs.google.com/document/d/examplepaper1/edit?usp=sharing"
+    },
+    {
+      "id": "p2",
+      "name": "Advanced Financial Statements - Past Paper 2022",
+      "year": "2022",
+      "grade": "Grade 12",
+      "link": "https://docs.google.com/document/d/examplepaper2/edit?usp=sharing"
+    },
+    {
+      "id": "p3",
+      "name": "Business Studies - Case Study Pack 2023",
+      "year": "2023",
+      "grade": "Grade 11",
+      "link": "https://docs.google.com/document/d/examplepaper3/edit?usp=sharing"
+    }
+  ]
+}

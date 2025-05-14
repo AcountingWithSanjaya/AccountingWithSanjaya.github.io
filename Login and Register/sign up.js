@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const fullnameError = document.getElementById("fullname-error");
   const emailError = document.getElementById("email-error");
   const birthdateError = document.getElementById("birthdate-error");
+  const gradeError = document.getElementById("grade-error");
   const passwordError = document.getElementById("password-error");
   const confirmPasswordError = document.getElementById("confirm-password-error");
   const termsError = document.getElementById("terms-error");
@@ -86,6 +87,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     fullnameError.textContent = "";
     emailError.textContent = "";
     birthdateError.textContent = "";
+    gradeError.textContent = "";
     passwordError.textContent = "";
     confirmPasswordError.textContent = "";
     termsError.textContent = "";
@@ -96,6 +98,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const fullname = document.getElementById("fullname").value.trim();
     const email = document.getElementById("email").value.trim();
     const birthdate = document.getElementById("birthdate").value;
+    const grade = document.getElementById("grade").value;
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirm-password").value;
     const acceptTerms = document.getElementById("accept-terms").checked;
@@ -117,6 +120,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (!birthdate) {
       birthdateError.textContent = "Date of birth is required";
+      isValid = false;
+    }
+
+    if (!grade) {
+      gradeError.textContent = "Grade is required";
       isValid = false;
     }
 
@@ -156,7 +164,8 @@ document.addEventListener("DOMContentLoaded", async function () {
           username: fullname, // Changed from fullname to username to match backend
           email,
           password,
-          birthdate
+          birthdate,
+          grade
         }),
       });
 

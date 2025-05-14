@@ -76,40 +76,75 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Fetch profile data
-    fetch('http://helya.pylex.xyz:10209/profile')
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(data => {
-            // Update profile information
-            document.getElementById('username').value = data.username;
-            document.getElementById('email').value = data.email;
-            document.getElementById('password').value = '********';
+    const userEmail = localStorage.getItem('userEmail');
+    const authToken = localStorage.getItem('authToken');
+
+    if (!userEmail || !authToken) {
+        loadingOverlay.classList.add('hidden');
+        errorOverlay.classList.remove('hidden');
+        errorOverlay.querySelector('.loading-text').textContent = 'Authentication Error';
+        errorOverlay.querySelector('.loading-subtext').textContent = 'Please log in to view your profile.';
+        errorOverlay.querySelector('button').addEventListener('click', function() {
+            window.location.href = '../Login and Register/Login.html';
+        });
+        return;
+    }
+
+    fetch(`http://helya.pylex.xyz:10209/profile?email=${userEmail}`, {
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+             if (response.status === 401) {
+                throw new Error('Unauthorized. Please log in again.');
+            }
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('username').value = data.username || 'N/A';
+        document.getElementById('email').value = data.email || 'N/A';
+        document.getElementById('password').value = '********'; // Keep password masked
+        
+        if (data.birthdate) {
             document.getElementById('birthdate').value = new Date(data.birthdate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+                year: 'numeric', month: 'long', day: 'numeric'
             });
-            document.getElementById('credits').value = `${data.credits.toLocaleString()} credits`;
+        } else {
+            document.getElementById('birthdate').value = 'N/A';
+        }
+        
+        document.getElementById('credits').value = `${data.credits !== undefined ? data.credits.toLocaleString() : 'N/A'} credits`;
+        document.getElementById('profile-page-grade').value = data.grade || 'N/A';
 
-            // Update profile images
-            if (data.profileImage) {
-                document.querySelectorAll('.profile-image, .profile-pic').forEach(img => {
-                    img.src = data.profileImage;
-                });
-            }
 
-            // Update profile name
-            if (data.fullName) {
-                document.querySelector('.profile-name').textContent = data.fullName;
-            }
+        if (data.profileImage) {
+            document.querySelectorAll('.profile-image, .profile-pic').forEach(img => {
+                img.src = data.profileImage;
+            });
+        }
 
-            loadingOverlay.classList.add('hidden');
-        })
-        .catch(error => {
-            console.error('Error fetching profile:', error);
-            loadingOverlay.classList.add('hidden');
+        document.querySelector('.profile-name').textContent = data.fullName || data.username || 'User';
+        
+        const gradeSpan = document.getElementById('profile-grade');
+        if(gradeSpan) gradeSpan.textContent = `Grade: ${data.grade || 'N/A'}`;
+        
+        const memberSinceSpan = document.getElementById('profile-member-since');
+        if(memberSinceSpan && data.createdAt){
+            memberSinceSpan.textContent = `Joined: ${new Date(data.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}`;
+        } else if (memberSinceSpan) {
+            memberSinceSpan.textContent = 'Joined: N/A';
+        }
+
+
+        loadingOverlay.classList.add('hidden');
+    })
+    .catch(error => {
+        console.error('Error fetching profile:', error);
+        loadingOverlay.classList.add('hidden');
             errorOverlay.classList.remove('hidden');
             
             errorOverlay.querySelector('button').addEventListener('click', function() {
@@ -136,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.querySelector('.buy-credits-btn').addEventListener('click', function() {
-        alert('Redirecting to credits purchase page...');
+        window.location.href = '../Purchase/index.html';
     });
 
     document.querySelector('.primary-button').addEventListener('click', function() {

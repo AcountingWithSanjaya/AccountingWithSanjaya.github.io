@@ -153,9 +153,36 @@ function showError(message) {
   downloadStatus.textContent = message;
 }
 
+
+export async function downloadPaper(paper) {
+  if (!paper || !paper.link) { // Assuming paper object has a 'link' and 'name'
+    showError('Invalid paper data. Please try again.');
+    return;
+  }
+  
+  // For Google Drive links or direct links, just open them.
+  // If files were served from backend and need special handling, logic would be similar to downloadRecording.
+  if (paper.link.startsWith('http')) {
+    window.open(paper.link, '_blank');
+    // Optionally show a simpler modal message
+    showModal();
+    resetModalState();
+    downloadFilename.textContent = paper.name || 'Document';
+    updateProgress(100); // Simulate completion for direct links
+    showSuccess('Your download should start in a new tab.');
+    setTimeout(() => {
+      hideModal();
+    }, 3000);
+  } else {
+    showError('Download link is not valid.');
+  }
+}
+
+
 document.addEventListener('DOMContentLoaded', initDownloadManager);
 
 export default {
   downloadRecording,
+  downloadPaper, // Export new function
   initDownloadManager
 };
