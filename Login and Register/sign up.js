@@ -43,7 +43,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        window.location.href = "../Student Lobby/Profile.html";
+        // Redirect to Login.html if already logged in
+        window.location.href = "Login.html"; 
         return;
       } else {
         localStorage.removeItem("authToken");
