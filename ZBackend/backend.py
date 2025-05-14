@@ -37,7 +37,7 @@ PAYHERE_CHECKOUT_URL = 'https://sandbox.payhere.lk/pay/checkout'  # Use 'https:/
 APP_BASE_URL = os.getenv('FRONTEND_APP_BASE_URL', 'http://127.0.0.1:5500')
 
 # This must be the public backend.
-NOTIFY_URL_BASE = os.getenv('BACKEND_NOTIFY_URL_BASE', 'http://helya.pylex.xyz:10209')
+NOTIFY_URL_BASE = os.getenv('BACKEND_NOTIFY_URL_BASE', 'http://127.0.0.1:10209')
 
 # Functions
 
