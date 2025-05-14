@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", async function () {
-  // Create loading overlay if it doesn't exist
   if (!document.getElementById("loading-overlay")) {
     const loadingOverlay = document.createElement("div");
     loadingOverlay.id = "loading-overlay";
@@ -17,8 +16,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
   
   const loadingOverlay = document.getElementById("loading-overlay");
-  
-  // Show loading overlay
   loadingOverlay.classList.remove("hidden");
   
   const token = localStorage.getItem("authToken");
@@ -48,16 +45,15 @@ document.addEventListener("DOMContentLoaded", async function () {
       } else {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userEmail");
-        localStorage.removeItem("rememberedEmail")
-        localStorage.removeItem("rememberMe")
-        localStorage.removeItem("returncustomer")
+        localStorage.removeItem("rememberedEmail");
+        localStorage.removeItem("rememberMe");
+        localStorage.removeItem("returncustomer");
       }
     } catch (error) {
       console.error("Error checking login status:", error);
     }
   }
   
-  // Hide loading overlay
   loadingOverlay.classList.add("hidden");
   
   const form = document.getElementById("signup-form");
@@ -66,11 +62,106 @@ document.addEventListener("DOMContentLoaded", async function () {
   const birthdateError = document.getElementById("birthdate-error");
   const passwordError = document.getElementById("password-error");
   const confirmPasswordError = document.getElementById("confirm-password-error");
+  const gradeError = document.getElementById("grade-error");
   const termsError = document.getElementById("terms-error");
   const successMessage = document.getElementById("success-message");
   const toggleButtons = document.querySelectorAll(".toggle-password");
 
-  // Fix password toggle functionality
+  class Dropdown {
+    constructor(container) {
+      this.container = container;
+      this.button = container.querySelector('.dropdown-btn');
+      this.menu = container.querySelector('.dropdown-menu');
+      this.options = container.querySelectorAll('.dropdown-option');
+      this.input = container.querySelector('input[type="hidden"]');
+      this.errorSpan = container.querySelector('.error-message');
+      
+      this.init();
+    }
+
+    init() {
+      this.button.setAttribute('aria-haspopup', 'listbox');
+      this.button.setAttribute('aria-expanded', 'false');
+      this.menu.setAttribute('role', 'listbox');
+      
+      this.button.addEventListener('click', () => this.toggle());
+      this.options.forEach(option => {
+        option.setAttribute('role', 'option');
+        option.addEventListener('click', () => this.select(option));
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!this.container.contains(e.target)) {
+          this.close();
+        }
+      });
+
+      this.button.addEventListener('keydown', (e) => this.handleKeydown(e));
+    }
+
+    toggle() {
+      if (this.menu.classList.contains('show')) {
+        this.close();
+      } else {
+        this.open();
+      }
+    }
+
+    open() {
+      this.menu.classList.add('show');
+      this.button.setAttribute('aria-expanded', 'true');
+    }
+
+    close() {
+      this.menu.classList.remove('show');
+      this.button.setAttribute('aria-expanded', 'false');
+    }
+
+    select(option) {
+      const value = option.textContent;
+      this.button.textContent = value;
+      this.input.value = value;
+      this.close();
+      
+      if (this.errorSpan) {
+        this.errorSpan.textContent = '';
+      }
+      
+      const event = new Event('change', { bubbles: true });
+      this.input.dispatchEvent(event);
+    }
+
+    handleKeydown(e) {
+      const isExpanded = this.button.getAttribute('aria-expanded') === 'true';
+      
+      switch (e.key) {
+        case 'Escape':
+          if (isExpanded) {
+            this.close();
+          }
+          break;
+        case 'ArrowDown':
+          if (!isExpanded) {
+            this.open();
+          }
+          const firstOption = this.options[0];
+          if (firstOption) {
+            firstOption.focus();
+          }
+          e.preventDefault();
+          break;
+        case 'Enter':
+        case ' ':
+          this.toggle();
+          e.preventDefault();
+          break;
+      }
+    }
+  }
+
+  const dropdowns = document.querySelectorAll('.dropdown-single');
+  dropdowns.forEach(dropdown => new Dropdown(dropdown));
+
   toggleButtons.forEach(button => {
     button.addEventListener("click", function() {
       const input = this.parentElement.querySelector('input');
@@ -82,12 +173,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   form.addEventListener("submit", async function(event) {
     event.preventDefault();
 
-    // Reset error messages
     fullnameError.textContent = "";
     emailError.textContent = "";
     birthdateError.textContent = "";
     passwordError.textContent = "";
     confirmPasswordError.textContent = "";
+    gradeError.textContent = "";
     termsError.textContent = "";
     successMessage.textContent = "";
     successMessage.style.backgroundColor = "";
@@ -98,6 +189,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const birthdate = document.getElementById("birthdate").value;
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirm-password").value;
+    const grade = document.getElementById("grade").value;
     const acceptTerms = document.getElementById("accept-terms").checked;
 
     let isValid = true;
@@ -117,6 +209,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (!birthdate) {
       birthdateError.textContent = "Date of birth is required";
+      isValid = false;
+    }
+
+    if (!grade) {
+      gradeError.textContent = "Please select your grade";
       isValid = false;
     }
 
@@ -153,10 +250,11 @@ document.addEventListener("DOMContentLoaded", async function () {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: fullname, // Changed from fullname to username to match backend
+          username: fullname,
           email,
           password,
-          birthdate
+          birthdate,
+          grade
         }),
       });
 
