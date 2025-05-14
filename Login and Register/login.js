@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   if (token && userEmail) {
     try {
       const response = await fetch(
-        "http://helya.pylex.xyz:10209/confirmloggedin",
+        "http://127.0.0.1:10209/confirmloggedin",
         {
           method: "POST",
           headers: {
@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       submitButton.disabled = true;
       submitButton.textContent = "Signing in...";
 
-      const response = await fetch("http://helya.pylex.xyz:10209/login", {
+      const response = await fetch("http://127.0.0.1:10209/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         successMessage.style.backgroundColor = "#e8f5e9";
 
         const verifyResponse = await fetch(
-          "http://helya.pylex.xyz:10209/confirmloggedin",
+          "http://127.0.0.1:10209/confirmloggedin",
           {
             method: "POST",
             headers: {

@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   if (token && userEmail) {
     try {
       const response = await fetch(
-        "http://helya.pylex.xyz:10209/confirmloggedin",
+        "http://127.0.0.1:10209/confirmloggedin",
         {
           method: "POST",
           headers: {
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       loadingOverlay.classList.remove("hidden");
 
-      const response = await fetch("http://helya.pylex.xyz:10209/register", {
+      const response = await fetch("http://127.0.0.1:10209/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

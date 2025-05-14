@@ -1,4 +1,4 @@
-const PAPERS_API_URL = 'http://helya.pylex.xyz:10209/loadpapers'; // Backend endpoint to fetch papers
+const PAPERS_API_URL = 'http://127.0.0.1:10209/loadpapers'; // Backend endpoint to fetch papers
 
 let allPapers = [];
 let filteredPapers = [];

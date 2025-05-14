@@ -1,6 +1,6 @@
 import { initRecordingsList } from './js/recordingsList.js';
 import './js/downloadManager.js';
-const API_URL = 'http://helya.pylex.xyz:10209';
+const API_URL = 'http://127.0.0.1:10209';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('authToken');

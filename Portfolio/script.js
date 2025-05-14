@@ -197,7 +197,7 @@ function handleCustomerTracking() {
     localStorage.setItem('returncustomer', 'true');
   }
 
-  fetch(`http://helya.pylex.xyz:10209/${url}`, {
+  fetch(`http://127.0.0.1:10209/${url}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ [url === 'returnconsumer' ? 'returncustomer' : 'newcustomer']: true })
@@ -230,7 +230,7 @@ function initPurchaseModal() {
         button.disabled = true;
         button.textContent = 'Processing...';
 
-        const response = await fetch('http://helya.pylex.xyz:10209/payhere/checkout', {
+        const response = await fetch('http://127.0.0.1:10209/payhere/checkout', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -340,7 +340,7 @@ function initSupportForm() {
     };
 
     try {
-      const response = await fetch('http://helya.pylex.xyz:10209/SupportForm', {
+      const response = await fetch('http://127.0.0.1:10209/SupportForm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

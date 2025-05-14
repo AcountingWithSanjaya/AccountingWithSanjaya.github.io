@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('profilePicture', file);
 
                 try {
-                    const response = await fetch('http://helya.pylex.xyz:10209/updatepfp', {
+                    const response = await fetch('http://127.0.0.1:10209/updatepfp', {
                         method: 'POST',
                         body: formData
                     });
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    fetch(`http://helya.pylex.xyz:10209/profile?email=${userEmail}`, {
+    fetch(`http://127.0.0.1:10209/profile?email=${userEmail}`, {
         headers: {
             'Authorization': `Bearer ${authToken}`
         }

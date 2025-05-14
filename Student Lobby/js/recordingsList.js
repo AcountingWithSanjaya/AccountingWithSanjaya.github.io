@@ -1,4 +1,4 @@
-const RECORDINGS_API_URL = 'http://helya.pylex.xyz:10209/loadrecordings'; // Backend endpoint
+const RECORDINGS_API_URL = 'http://127.0.0.1:10209/loadrecordings'; // Backend endpoint
 
 let allRecordings = [];
 let filteredRecordings = [];

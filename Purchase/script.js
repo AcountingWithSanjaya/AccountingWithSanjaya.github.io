@@ -13,7 +13,7 @@ async function fetchAndDisplayUserCredits() {
     }
 
     try {
-        const response = await fetch(`http://helya.pylex.xyz:10209/api/user/credits?email=${userEmail}`, {
+        const response = await fetch(`http://127.0.0.1:10209/api/user/credits?email=${userEmail}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
         if (!response.ok) {
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   await fetchAndDisplayUserCredits(); // Fetch credits on page load
 
   const purchaseButtons = document.querySelectorAll('.purchase-btn');
-  const backendUrl = "http://helya.pylex.xyz:10209";
+  const backendUrl = "http://127.0.0.1:10209";
 
   purchaseButtons.forEach(button => {
     button.addEventListener('click', async () => {
