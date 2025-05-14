@@ -157,8 +157,12 @@ from googleapiclient.http import MediaIoBaseUpload
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = 'credentials.json'
-drive_service = build('drive', 'v3', credentials=service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES))
-FOLDER_ID = '1XvMPHh57_HxzKwVTeVjhUFUHQ38XWHu0'
+drive_service = None
+try:
+    drive_service = build('drive', 'v3', credentials=service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES))
+except Exception as e:
+    print(f"WARNING: Failed to initialize Google Drive service: {e}. Google Drive features will be disabled.")
+FOLDER_ID = '1XvMPHh57_HxzKwVTeVjhUFUHQ38XWHu0' # Ensure this is defined even if drive_service fails, though it might not be usable.
 USERS_JSON_PATH = 'users.json'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -175,6 +179,9 @@ def get_default_profile_picture():
         return "" # Return empty or a placeholder if not found
 
 def get_or_create_user_subfolder(email):
+    if drive_service is None:
+        print("WARNING: Google Drive service not available, cannot get or create user subfolder.")
+        return None # Or raise an error, depending on desired behavior
     query = f"'{FOLDER_ID}' in parents and name='{email}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
     results = drive_service.files().list(q=query, fields="files(id)").execute()
     files = results.get('files', [])
@@ -192,6 +199,9 @@ def get_or_create_user_subfolder(email):
     return folder['id']
 
 def delete_existing_files(folder_id):
+    if drive_service is None:
+        print("WARNING: Google Drive service not available, cannot delete existing files.")
+        return
     query = f"'{folder_id}' in parents and trashed=false"
     results = drive_service.files().list(q=query, fields="files(id)").execute()
     for file in results.get('files', []):
@@ -358,6 +368,9 @@ def get_profile():
 @app.route('/updatepfp', methods=['POST'])
 def update_profile_picture():
     try:
+        if drive_service is None:
+            return jsonify({"message": "Google Drive service not configured. Profile picture update failed."}), 503
+
         if 'profilePicture' not in request.files or 'email' not in request.form:
             return jsonify({"message": "Missing file or email"}), 400
 
@@ -944,6 +957,8 @@ async def on_message(message):
 # PANEL LOADING ----------------------------
 
 def upload_to_drive(file_data, filename, mime_type):
+    if drive_service is None:
+        raise Exception("Google Drive service is not initialized. Cannot upload file.")
     try:
         file_metadata = {
             'name': filename,
