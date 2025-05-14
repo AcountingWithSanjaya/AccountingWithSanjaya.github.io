@@ -432,6 +432,7 @@ def receive_ping():
 
 DISCORD_TOKEN = os.getenv("TOKEN")
 TARGET_USER_ID = 795492792176082944
+ALLOWED_USERS = os.getenv('ALLOWED_USERS', '').split(',') # For bot commands
 loop = asyncio.get_event_loop()
 
 @app.route('/SupportForm', methods=['POST'])
@@ -468,7 +469,6 @@ def handle_form():
 
 
 # Assuming CLASSES_FILE is defined at the top of the file
-# ALLOWED_USERS = os.getenv('ALLOWED_USERS', '').split(',') # This seems for bot commands, not API
 
 def load_all_classes_from_file():
     data = load_json(CLASSES_FILE)
