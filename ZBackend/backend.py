@@ -909,6 +909,75 @@ def run_bot():
 def run_discord_bot():
     loop.create_task(bot.start(DISCORD_TOKEN))
 
+
+@app.route('/delete-account', methods=['POST'])
+def delete_account():
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        token = data.get('token')
+
+        if not email or not token:
+            return jsonify({"message": "Email and token are required"}), 400
+
+        if not verify_token(email, token): # Verifies token and checks expiry
+            return jsonify({"message": "Invalid or expired session"}), 401
+
+        users = load_json(USERS_FILE)
+        sessions = load_json(SESSIONS_FILE)
+
+        if email not in users:
+            return jsonify({"message": "User not found"}), 404
+
+        # Delete user data
+        del users[email]
+        if email in sessions:
+            del sessions[email]
+
+        save_json(USERS_FILE, users)
+        save_json(SESSIONS_FILE, sessions)
+
+        # Attempt to delete user's Google Drive folder if service is available
+        if drive_service:
+            try:
+                user_folder_id = get_or_create_user_subfolder(email) # This will find it if it exists
+                if user_folder_id:
+                    # To delete a folder, it must be empty, or use a different API call.
+                    # For simplicity, we'll just delete the folder.
+                    # If this fails due to non-empty, it needs more robust handling.
+                    # Alternatively, just delete the PFP file if its ID is stored.
+                    # For now, let's attempt to delete the folder directly.
+                    # drive_service.files().delete(fileId=user_folder_id).execute()
+                    # print(f"Attempted to delete Google Drive folder for {email}")
+                    # A safer approach might be to just delete known files like PFP
+                    # For now, we'll focus on JSON data removal.
+                    # If ProfileImageFileID was stored:
+                    # pfp_file_id = user.get("profileImageFileID") # Assuming 'user' was the dict before deletion
+                    # if pfp_file_id:
+                    # drive_service.files().delete(fileId=pfp_file_id).execute()
+                    # print(f"Deleted PFP file for {email}")
+                    
+                    # Let's find the subfolder by email and delete it
+                    query = f"'{FOLDER_ID}' in parents and name='{email}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+                    results = drive_service.files().list(q=query, fields="files(id)").execute()
+                    user_gdrive_files = results.get('files', [])
+                    if user_gdrive_files:
+                        user_gdrive_folder_id = user_gdrive_files[0]['id']
+                        drive_service.files().delete(fileId=user_gdrive_folder_id).execute()
+                        print(f"Deleted Google Drive folder {user_gdrive_folder_id} for user {email}")
+
+            except Exception as e_drive:
+                print(f"Could not delete Google Drive folder for {email}: {e_drive}")
+        
+        send_embed_to_discord("Account Deletion", f"User account deleted: {email}")
+        print(f"User account deleted: {email}")
+        return jsonify({"message": "Account deleted successfully"}), 200
+
+    except Exception as e:
+        print(f"Error during account deletion: {e}")
+        send_embed_to_discord("Account Deletion Error", f"Error deleting account {email}: {e}")
+        return jsonify({"message": "An error occurred during account deletion"}), 500
+
 @bot.event
 async def on_ready():
     print(f'Bot is ready: {bot.user.name}')

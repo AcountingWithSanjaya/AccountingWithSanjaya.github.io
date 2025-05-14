@@ -191,4 +191,75 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.transform = 'translateX(0)';
         });
     });
+
+    // Delete Account Functionality
+    const deleteAccountBtn = document.getElementById('delete-account-btn');
+    const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+
+    if (deleteAccountBtn && deleteConfirmModal && confirmDeleteBtn && cancelDeleteBtn) {
+        deleteAccountBtn.addEventListener('click', () => {
+            deleteConfirmModal.classList.remove('hidden');
+        });
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteConfirmModal.classList.add('hidden');
+        });
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            const userEmailForDelete = localStorage.getItem('userEmail');
+            const authTokenForDelete = localStorage.getItem('authToken');
+
+            if (!userEmailForDelete || !authTokenForDelete) {
+                showNotification('Authentication details not found. Cannot delete account.', 'error');
+                deleteConfirmModal.classList.add('hidden');
+                return;
+            }
+
+            confirmDeleteBtn.disabled = true;
+            confirmDeleteBtn.textContent = 'Deleting...';
+
+            try {
+                const response = await fetch('http://127.0.0.1:10209/delete-account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Authorization header might not be strictly needed if email+token in body is how verify_token works
+                        // 'Authorization': `Bearer ${authTokenForDelete}` 
+                    },
+                    body: JSON.stringify({
+                        email: userEmailForDelete,
+                        token: authTokenForDelete
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Account deleted successfully. Redirecting...', 'success');
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userEmail');
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('rememberedEmail');
+                    localStorage.removeItem('rememberMe');
+                    localStorage.removeItem('returncustomer');
+                    setTimeout(() => {
+                        window.location.href = '../Login and Register/Login.html';
+                    }, 2000);
+                } else {
+                    throw new Error(result.message || 'Failed to delete account.');
+                }
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                showNotification(error.message, 'error');
+            } finally {
+                confirmDeleteBtn.disabled = false;
+                confirmDeleteBtn.textContent = 'Yes, Delete My Account';
+                deleteConfirmModal.classList.add('hidden');
+            }
+        });
+    } else {
+        console.warn('Delete account buttons or modal not found in the DOM.');
+    }
 });
