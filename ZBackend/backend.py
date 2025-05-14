@@ -939,7 +939,7 @@ async def on_message(message):
 
                 classes = load_classes()
                 classes.append(new_class)
-                save_classes(classes)
+                save_all_classes_to_file(classes)
 
                 await message.reply('Class added successfully!')
             except ValueError:
@@ -1244,7 +1244,7 @@ if __name__ == '__main__':
                 "name": "John Doe"
             }
         }
-        save_json(initial_users, 'users.json')
+        save_json('data/users.json', initial_users)
     
     # Initialize courses.json if it doesn't exist
     if not os.path.exists('data/courses.json'):
@@ -1262,7 +1262,7 @@ if __name__ == '__main__':
                 "description": "Classical Mechanics"
             }
         }
-        save_json(initial_courses, 'courses.json')
+        save_json('data/courses.json', initial_courses)
 
     import threading
     bot_thread = threading.Thread(target=run_bot, daemon=True)
