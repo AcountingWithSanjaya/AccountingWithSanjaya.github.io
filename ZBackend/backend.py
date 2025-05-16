@@ -1257,7 +1257,8 @@ def confirm_teacher_logged_in():
         
     # For a real system, check against a list of teacher emails or a role.
     # Using the hardcoded email for now as it was the previous check.
-    is_teacher = (email == 'ssjayasundara@yahoo.com0') 
+    # Ensure this email is correct and does not have typos like a trailing '0'.
+    is_teacher = (email == 'ssjayasundara@yahoo.com') 
 
     if not is_teacher:
          return jsonify({"message": "User is not authorized as a teacher"}), 403
@@ -1273,7 +1274,8 @@ def load_teacher():
     email = data.get('email')
     token = data.get('token')
     
-    is_teacher = (email == 'ssjayasundara@yahoo.com0')  # Replace with actual teacher check logic
+    # Ensure this email is correct and does not have typos like a trailing '0'.
+    is_teacher = (email == 'ssjayasundara@yahoo.com')  # Replace with actual teacher check logic
 
     if not is_teacher:
         return jsonify({"message": "User is not authorized as a teacher"}), 403
@@ -1348,7 +1350,8 @@ def upload_recording():
     email = request.form.get('email')
     token = request.form.get('token')
     
-    is_teacher = (email == 'ssjayasundara@yahoo.com0')
+    # Ensure this email is correct and does not have typos like a trailing '0'.
+    is_teacher = (email == 'ssjayasundara@yahoo.com')
     if not is_teacher or not verify_token(email, token):
         return jsonify({"message": "Unauthorized"}), 401
     
@@ -1480,7 +1483,8 @@ def teacher_schedule_class():
     auth_email = form_data.get('auth_email') 
     auth_token = form_data.get('auth_token')
 
-    is_teacher = (auth_email == 'ssjayasundara@yahoo.com0')
+    # Ensure this email is correct and does not have typos like a trailing '0'.
+    is_teacher = (auth_email == 'ssjayasundara@yahoo.com')
     if not is_teacher or not verify_token(auth_email, auth_token):
         return jsonify({"message": "Unauthorized to schedule class"}), 401
 
