@@ -32,16 +32,30 @@ document.addEventListener('DOMContentLoaded', function() {
         input.onchange = async function() {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
+                const userEmailForPfp = localStorage.getItem('userEmail');
+                const authTokenForPfp = localStorage.getItem('authToken');
+
+                if (!userEmailForPfp || !authTokenForPfp) {
+                    showNotification('Authentication details not found. Please log in again.', 'error');
+                    return;
+                }
+
                 const formData = new FormData();
                 formData.append('profilePicture', file);
+                formData.append('email', userEmailForPfp); // Add email to form data
+                formData.append('token', authTokenForPfp); // Add token to form data
 
                 try {
+                    // No headers needed for FormData with fetch, browser sets Content-Type
                     const response = await fetch('http://127.0.0.1:10209/updatepfp', {
                         method: 'POST',
                         body: formData
                     });
 
-                    if (!response.ok) throw new Error('Failed to upload image');
+                    if (!response.ok) {
+                        const errorResult = await response.json().catch(() => ({ message: 'Failed to upload image. Server returned an error.' }));
+                        throw new Error(errorResult.message || 'Failed to upload image');
+                    }
 
                     const result = await response.json();
                     

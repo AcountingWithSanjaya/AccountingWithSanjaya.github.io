@@ -357,19 +357,30 @@ def get_profile():
 @app.route('/updatepfp', methods=['POST'])
 def update_profile_picture():
     try:
+        email = request.form.get('email')
+        token = request.form.get('token')
+        file = request.files.get('profilePicture')
+
+        if not email or not token:
+            return jsonify({"message": "Authentication details (email or token) missing"}), 400
+        
+        if not verify_token(email, token):
+            return jsonify({"message": "Invalid or expired session. Please log in again."}), 401
+
         if drive_service is None:
-            return jsonify({"message": "Google Drive service not configured. Profile picture update failed."}), 503
+            print("WARNING: update_profile_picture - Google Drive service not configured.")
+            return jsonify({"message": "Profile picture update service is currently unavailable. Please try again later."}), 503
 
-        if 'profilePicture' not in request.files or 'email' not in request.form:
-            return jsonify({"message": "Missing file or email"}), 400
-
-        file = request.files['profilePicture']
-        email = request.form['email']
-
+        if not file:
+            return jsonify({"message": "No profile picture file provided."}), 400
+            
         if file.filename == '' or not allowed_file(file.filename):
-            return jsonify({"message": "Invalid or no file selected"}), 400
+            return jsonify({"message": "Invalid file type or no file selected."}), 400
 
         user_folder_id = get_or_create_user_subfolder(email)
+        if user_folder_id is None: # Check if subfolder creation/retrieval failed (e.g. GDrive issue)
+            return jsonify({"message": "Could not access user's storage for profile picture."}), 500
+            
         delete_existing_files(user_folder_id)
 
         filename = secure_filename(file.filename)
