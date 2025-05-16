@@ -1047,7 +1047,7 @@ def upload_to_drive(file_data, filename, mime_type):
         # For now, if upload_to_drive returned a mock link, this is fine.
         if "mockdrive://" not in str(e): # Avoid re-raising if it's due to mock
              raise
-        return f"mockdrive://{filename_passed_to_upload_to_drive}" # Return mock if error after init check
+        return f"mockdrive://{filename}" # Return mock if error after init check
 
 
 # These functions are no longer needed as we load real data.
