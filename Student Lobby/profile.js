@@ -61,14 +61,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Update profile pictures
                     document.querySelectorAll('.profile-image, .profile-pic').forEach(img => {
-                        img.src = result.profileImage;
+                        img.src = result.profileImage + '?' + new Date().getTime(); // Added cache buster
                     });
 
                     // Show success message
                     showNotification('Profile picture updated successfully!', 'success');
                 } catch (error) {
                     console.error('Error uploading profile picture:', error);
-                    showNotification('Failed to update profile picture', 'error');
+                    showNotification(error.message || 'Failed to update profile picture', 'error'); // Show specific error
                 }
             }
         };
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (data.profileImage) {
             document.querySelectorAll('.profile-image, .profile-pic').forEach(img => {
-                img.src = data.profileImage;
+                img.src = data.profileImage + '?' + new Date().getTime(); // Added cache buster
             });
         }
 
