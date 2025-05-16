@@ -103,11 +103,11 @@ def cleanup_sessions():
         if isinstance(user_session_info, dict) and "active_tokens" in user_session_info:
             still_valid_tokens = [
                 s_token_info for s_token_info in user_session_info["active_tokens"]
-                if datetime.fromisoformat(s_token_info['created_at']) + timedelta(hours=24) > current_time # 24-hour expiry for active tokens
+                if 'expires_at' in s_token_info and datetime.fromisoformat(s_token_info['expires_at']) > current_time
             ]
             if still_valid_tokens: # Only keep user entry if they have any valid tokens left
                 cleaned_sessions_data[email] = {"active_tokens": still_valid_tokens}
-        # Old single-token format entries will be naturally pruned by not being added to cleaned_sessions_data
+        # Old format tokens (without expires_at) or malformed entries will be pruned.
     
     save_json(SESSIONS_FILE, cleaned_sessions_data)
 
@@ -122,25 +122,44 @@ def verify_token(email, token):
     token_to_verify_is_valid = False
     
     updated_tokens_for_user = []
-    token_was_present_in_list = any(s['token'] == token for s in active_tokens)
-
-    if not token_was_present_in_list:
-        return False # The token to verify was not found at all
-
+    token_to_verify_is_valid = False # Flag to indicate if the token being verified is itself valid
+    
+    found_token_to_verify = False
     for session_token_info in active_tokens:
-        session_time = datetime.fromisoformat(session_token_info['created_at'])
-        is_expired = (datetime.now() - session_time > timedelta(hours=24))
-
         if session_token_info['token'] == token:
-            if not is_expired:
-                updated_tokens_for_user.append(session_token_info)
+            found_token_to_verify = True
+            # Check expiry for the token being verified
+            if 'expires_at' in session_token_info and datetime.now() < datetime.fromisoformat(session_token_info['expires_at']):
+                updated_tokens_for_user.append(session_token_info) # Keep it, it's valid
                 token_to_verify_is_valid = True
-            # If it is the token and it's expired, it's not added to updated_tokens_for_user, thus removed.
-        elif not is_expired:
-            # Keep other non-expired tokens
-            updated_tokens_for_user.append(session_token_info)
+            # If expired or no expires_at, it's not added, thus removed.
+            break # Found the token, no need to check further for this specific token
 
-    if not updated_tokens_for_user:
+    if not found_token_to_verify:
+        return False # The token to verify was not in the list at all.
+
+    if not token_to_verify_is_valid:
+        # If the token being verified was found but was expired, we still need to clean up other tokens
+        # and save, but this specific verification fails.
+        pass # Proceed to save potentially cleaned list, but return False for this token
+
+    # Rebuild the list of tokens, excluding any other expired ones (not just the one being verified)
+    # This handles the case where verify_token is called and cleans up other expired tokens simultaneously.
+    # However, if the token_to_verify itself was valid, it's already in updated_tokens_for_user.
+    # If it was invalid, it's not. We need to ensure other valid tokens are preserved.
+    
+    final_active_tokens = []
+    for s_token_info in active_tokens:
+        if 'expires_at' in s_token_info and datetime.now() < datetime.fromisoformat(s_token_info['expires_at']):
+            if s_token_info['token'] == token and token_to_verify_is_valid: # If it's the one we verified and it was good
+                 if not any(t['token'] == s_token_info['token'] for t in final_active_tokens): # Avoid double adding
+                    final_active_tokens.append(s_token_info)
+            elif s_token_info['token'] != token: # Preserve other valid tokens
+                 if not any(t['token'] == s_token_info['token'] for t in final_active_tokens):
+                    final_active_tokens.append(s_token_info)
+            # If s_token_info['token'] == token but token_to_verify_is_valid is False, it's skipped (expired)
+
+    if not final_active_tokens:
         # If all tokens (including the one being verified or others) were expired or removed
         if email in sessions_data:
             del sessions_data[email]
@@ -295,8 +314,9 @@ def newregister():
 def login():
     try:
         data = request.get_json()
-        identifier = data.get('email') 
+        identifier = data.get('email') # This field is named 'email' in frontend request
         password = data.get('password')
+        remember_me = data.get('rememberMe', False) # Get rememberMe flag, default to False
 
         if not identifier or not password:
             return jsonify({"message": "Email/username and password are required"}), 400
@@ -319,10 +339,19 @@ def login():
         # Ensure active_tokens is a list (it should be if previous check passed, but defensive)
         if not isinstance(sessions_data[email].get("active_tokens"), list):
             sessions_data[email]["active_tokens"] = []
+        
+        # Determine token expiry
+        created_at_dt = datetime.now()
+        if remember_me:
+            expiry_duration = timedelta(days=30)
+        else:
+            expiry_duration = timedelta(hours=24)
+        expires_at_dt = created_at_dt + expiry_duration
 
         sessions_data[email]["active_tokens"].append({
             'token': new_token,
-            'created_at': datetime.now().isoformat()
+            'created_at': created_at_dt.isoformat(),
+            'expires_at': expires_at_dt.isoformat() 
             # Optionally, add device info here: 'device_info': request.headers.get('User-Agent')
         })
         save_json(SESSIONS_FILE, sessions_data)

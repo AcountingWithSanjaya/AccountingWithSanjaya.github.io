@@ -47,12 +47,13 @@ document.addEventListener("DOMContentLoaded", async function () {
   const successMessage = document.getElementById("success-message");
   const rememberMeCheckbox = document.getElementById("remember-me");
   const passwordInput = form.querySelector('input[type="password"]');
+  const emailInput = form.querySelector('input[type="email"]'); // Get email input field
   const toggleButtons = form.querySelectorAll(".toggle-password");
   const storedEmail = localStorage.getItem("rememberedEmail");
   const storedRememberMe = localStorage.getItem("rememberMe") === "true";
 
   if (storedEmail && storedRememberMe) {
-    form.querySelector('input[type="email"]').value = storedEmail;
+    emailInput.value = storedEmail;
     rememberMeCheckbox.checked = true;
   }
 
@@ -86,20 +87,21 @@ document.addEventListener("DOMContentLoaded", async function () {
     termsError.textContent = "";
     successMessage.textContent = "";
 
-    const email = form.querySelector('input[type="email"]').value.trim();
+    const identifier = emailInput.value.trim(); // Use 'identifier' for clarity
     const password = passwordInput.value.trim();
     const rememberMe = rememberMeCheckbox.checked;
     const acceptTerms = document.getElementById("accept-terms").checked;
 
     let isValid = true;
 
-    if (!email) {
-      emailError.textContent = "Email is required";
+    if (!identifier) { // Check identifier
+      emailError.textContent = "Email or username is required"; // More generic message
       isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (identifier.includes('@') && !/\S+@\S+\.\S+/.test(identifier)) { // Validate if it looks like an email
       emailError.textContent = "Please enter a valid email";
       isValid = false;
     }
+
 
     if (!password) {
       passwordError.textContent = "Password is required";
@@ -113,13 +115,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (!isValid) return;
 
-    if (rememberMe) {
-      localStorage.setItem("rememberedEmail", email);
-      localStorage.setItem("rememberMe", "true");
-    } else {
-      localStorage.removeItem("rememberedEmail");
-      localStorage.setItem("rememberMe", "false");
-    }
+    // Handling of rememberedEmail and rememberMe flag will be done *after* successful login, using backend's result.email
 
     try {
       const submitButton = form.querySelector('button[type="submit"]');
@@ -131,15 +127,23 @@ document.addEventListener("DOMContentLoaded", async function () {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: identifier, password, rememberMe }), // Send identifier as email, and rememberMe flag
       });
 
       const result = await response.json();
 
       if (response.ok) {
         localStorage.setItem("authToken", result.token);
-        localStorage.setItem("userEmail", email);
+        localStorage.setItem("userEmail", result.email); // Use email from backend response
         localStorage.setItem("username", result.username);
+
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", result.email); // Store actual email from backend
+          localStorage.setItem("rememberMe", "true");
+        } else {
+          localStorage.removeItem("rememberedEmail");
+          localStorage.setItem("rememberMe", "false"); // Explicitly set to false
+        }
 
         successMessage.textContent = "Login successful!";
         successMessage.style.color = "var(--success-green)";
@@ -153,7 +157,7 @@ document.addEventListener("DOMContentLoaded", async function () {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              email: email,
+              email: result.email, // Use email from backend response for verification
               token: result.token,
             }),
           }
