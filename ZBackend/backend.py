@@ -164,7 +164,7 @@ def verify_token(email, token):
         if email in sessions_data:
             del sessions_data[email]
     else:
-        sessions_data[email]["active_tokens"] = updated_tokens_for_user
+        sessions_data[email]["active_tokens"] = final_active_tokens # Correctly save the list of all valid tokens
     
     save_json(SESSIONS_FILE, sessions_data)
     
