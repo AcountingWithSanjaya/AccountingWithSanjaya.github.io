@@ -333,7 +333,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     exportDataBtn.addEventListener('click', function() {
-        alert('Preparing data export...');
+        // Gather data from the input fields and other displayed info
+        const userEmailForExport = localStorage.getItem('userEmail'); // Key for filename
+        const profileDataToExport = {
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value,
+            birthdate: document.getElementById('birthdate').value, // This is already formatted
+            grade: document.getElementById('profile-page-grade').value,
+            credits: document.getElementById('credits').value,
+            profileImage: document.querySelector('.profile-image').src.split('?')[0], // Remove cache buster for export
+            // You could add more data here if it's available on the page
+            // For example, if enrolled classes or activity data were stored in JS variables:
+            // enrolled_classes: userEnrolledClassesArray, // Assuming this exists
+        };
+
+        try {
+            const jsonData = JSON.stringify(profileDataToExport, null, 4); // Pretty print JSON
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const filename = userEmailForExport ? `profile_data_${userEmailForExport.split('@')[0]}.json` : 'profile_data.json';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification('Data exported successfully!', 'success');
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            showNotification('Failed to export data.', 'error');
+        }
     });
 
     // Hover animations
