@@ -215,6 +215,46 @@ body {
   margin-bottom: 1rem;
   border: 4px solid var(--blue-100);
   padding: 4px;
+  display: block; 
+  margin-left: auto; 
+  margin-right: auto; 
+}
+
+.profile-header { /* Parent of profile-image and upload-overlay */
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative; /* Needed for absolute positioning of the overlay */
+}
+
+.upload-overlay {
+  position: absolute;
+  top: 0; /* Align with the top of the profile-header */
+  /* Calculate left position to center overlay over the image */
+  /* Assuming profile-image is 150px wide and centered in profile-header */
+  left: calc(50% - 75px); /* (profile-header width / 2) - (overlay width / 2) */
+  width: 150px;  /* Match image width */
+  height: 150px; /* Match image height */
+  border-radius: 50%; /* Match image shape */
+  background-color: rgba(0, 0, 0, 0.5);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 0.9rem;
+  /* Ensure it's above the image if there are z-index issues, though usually not needed here */
+}
+
+.profile-header:hover .upload-overlay {
+  opacity: 1;
+}
+
+.upload-overlay i {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .profile-name {

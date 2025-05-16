@@ -392,7 +392,8 @@ def update_profile_picture():
         uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
         file_id = uploaded_file.get('id')
-        file_url = f"https://drive.google.com/uc?id={file_id}"
+        # Use a more direct embedding-friendly URL format for Google Drive images
+        file_url = f"https://drive.google.com/uc?export=view&id={file_id}"
 
         user_data = {}
         if os.path.exists(USERS_JSON_PATH):
