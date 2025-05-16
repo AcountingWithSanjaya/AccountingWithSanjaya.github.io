@@ -6,6 +6,18 @@
     <link rel="icon" type="image/png" href="/Images/logo.png"> 
     <title>Sign Up - Quiver.</title>
     <link rel="stylesheet" href="/Login and Register/style.css">
+    <script>
+        (function () {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                var script = document.createElement('script');
+                script.src = '//cdn.jsdelivr.net/npm/eruda';
+                document.head.appendChild(script);
+                script.onload = function () {
+                    eruda.init();
+                }
+            }
+        })();
+    </script>
 </head>
 <body>
     <header class="header">

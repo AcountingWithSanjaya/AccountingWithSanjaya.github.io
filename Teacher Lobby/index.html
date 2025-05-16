@@ -7,6 +7,18 @@
     <title>Quiver. - Teacher Hub</title>
     <link rel="stylesheet" href="/Teacher Lobby/css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        (function () {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                var script = document.createElement('script');
+                script.src = '//cdn.jsdelivr.net/npm/eruda';
+                document.head.appendChild(script);
+                script.onload = function () {
+                    eruda.init();
+                }
+            }
+        })();
+    </script>
   </head>
   <body>
     <div id="app">

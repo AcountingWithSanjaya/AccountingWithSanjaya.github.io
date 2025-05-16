@@ -14,6 +14,18 @@
         .btn { display: inline-block; padding: 10px 20px; margin: 5px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; transition: background-color 0.3s; }
         .btn:hover { background-color: #0056b3; }
     </style>
+    <script>
+        (function () {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                var script = document.createElement('script');
+                script.src = '//cdn.jsdelivr.net/npm/eruda';
+                document.head.appendChild(script);
+                script.onload = function () {
+                    eruda.init();
+                }
+            }
+        })();
+    </script>
 </head>
 <body>
     <div class="container">

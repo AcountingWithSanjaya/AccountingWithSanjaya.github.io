@@ -8,6 +8,18 @@
     <script type="text/javascript">
         window.location.href = "Home/index.html";
     </script>
+    <script>
+        (function () {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                var script = document.createElement('script');
+                script.src = '//cdn.jsdelivr.net/npm/eruda';
+                document.head.appendChild(script);
+                script.onload = function () {
+                    eruda.init();
+                }
+            }
+        })();
+    </script>
 </head>
 <body>
     <p>If you are not redirected automatically, follow this <a href="Home/index.html">link to the homepage</a>.</p>
