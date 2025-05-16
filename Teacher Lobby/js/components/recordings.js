@@ -251,18 +251,45 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
   });
   
   uploadForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    // Check if a file is selected
-    if (fileInput.files.length === 0) {
-      alert('Please select a recording file to upload.');
-      return;
-    }
-    
-    // Simulate upload
-    simulateUpload();
-  });
+      e.preventDefault();
+      const recordingId = uploadForm.dataset.recordingId;
+      const fileToUpload = fileInput.files[0];
+
+      if (!recordingId) {
+        alert('Recording ID is missing. Cannot upload.');
+        return;
+      }
+      if (!fileToUpload) {
+        alert('Please select a recording file to upload.');
+        return;
+      }
+
+      const selectedCourseOption = recordingCourseSelect.options[recordingCourseSelect.selectedIndex];
+      
+      const metadata = {
+        title: recordingTitleInput.value,
+        courseName: selectedCourseOption ? selectedCourseOption.text : '', // Course name
+        // courseId: selectedCourseOption ? selectedCourseOption.value : '', // Course ID if using IDs
+        date: recordingDateInput.value
+      };
+      
+      handleRecordingUpload(recordingId, fileToUpload, metadata);
+    });
+  }
   
-  // Initial render
-  renderRecordings(recordings);
+  // Initial render for the main recordings page grid
+  if (recordingsGrid) { // Ensure this specific grid exists before rendering to it
+      renderRecordings(recordings);
+  }
+
+  // Populate course filter dropdown on the main recordings page
+  if (courseFilter && coursesData) {
+    courseFilter.innerHTML = '<option value="all">All Courses</option>';
+    coursesData.forEach(course => {
+        const option = document.createElement('option');
+        option.value = course.name; // Filter by course name
+        option.textContent = course.name;
+        courseFilter.appendChild(option);
+    });
+  }
 }

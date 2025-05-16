@@ -1128,38 +1128,63 @@ def upload_recording():
     email = request.form.get('email')
     token = request.form.get('token')
     
-    if email != 'ssjayasundara@yahoo.com0' or not verify_token(email, token):
+    is_teacher = (email == 'ssjayasundara@yahoo.com0')
+    if not is_teacher or not verify_token(email, token):
         return jsonify({"message": "Unauthorized"}), 401
     
     if 'file' not in request.files:
         return jsonify({"message": "No file provided"}), 400
         
     file = request.files['file']
-    recording_id = request.form.get('recordingId')
+    recording_id_to_update = request.form.get('recordingId') 
+    recording_title = request.form.get('title')
+    recording_course_name = request.form.get('course') # from frontend 'courseName' in metadata
+    recording_date = request.form.get('date')
+
+    recordings_data_full = load_json(RECORDINGS_FILE)
+    recordings_list = recordings_data_full.get('recordings', [])
+    target_recording = None
+    found_idx = -1
+
+    for idx, rec in enumerate(recordings_list):
+        if rec.get('id') == recording_id_to_update:
+            target_recording = rec
+            found_idx = idx
+            break
     
-    recordings = load_json('recordings.json')
-    recording = next((r for r in recordings['recordings'] if r['id'] == recording_id), None)
-    
-    if not recording:
-        return jsonify({"message": "Recording not found"}), 404
+    if not target_recording:
+        return jsonify({"message": "Recording ID not found to update"}), 404
     
     try:
+        file_bytes = file.read()
         drive_link = upload_to_drive(
-            file.read(),
-            f"recording_{recording_id}_{file.filename}",
+            file_bytes, 
+            f"recording_{target_recording['id']}_{secure_filename(file.filename)}", 
             file.content_type
         )
         
-        recording['status'] = 'uploaded'
-        recording['driveLink'] = drive_link
-        save_json('recordings.json', recordings)
+        target_recording['status'] = 'uploaded'
+        target_recording['driveLink'] = drive_link 
+        target_recording['link'] = drive_link 
+        target_recording['filename'] = secure_filename(file.filename)
+        target_recording['size'] = f"{len(file_bytes) / (1024*1024):.2f} MB"
+
+        if recording_title: target_recording['title'] = recording_title
+        if recording_course_name: target_recording['course'] = recording_course_name
+        if recording_date: target_recording['date'] = recording_date
+        target_recording['uploadDate'] = datetime.now().strftime('%Y-%m-%d')
+
+        recordings_list[found_idx] = target_recording 
+        save_json(RECORDINGS_FILE, {"recordings": recordings_list})
         
         return jsonify({
             "message": "Recording uploaded successfully",
-            "driveLink": drive_link
+            "driveLink": drive_link,
+            "recording": target_recording 
         })
         
     except Exception as e:
+        print(f"Error during recording upload: {e}")
         return jsonify({"message": f"Upload failed: {str(e)}"}), 500
 
 @app.route('/upload/paper', methods=['POST'])
@@ -1167,45 +1192,132 @@ def upload_paper():
     email = request.form.get('email')
     token = request.form.get('token')
     
-    if email != 'ssjayasundara@yahoo.com0' or not verify_token(email, token):
+    is_teacher = (email == 'ssjayasundara@yahoo.com0')
+    if not is_teacher or not verify_token(email, token):
         return jsonify({"message": "Unauthorized"}), 401
     
     if 'file' not in request.files:
         return jsonify({"message": "No file provided"}), 400
         
     file = request.files['file']
-    paper_data = json.loads(request.form.get('data'))
+    paper_meta_json_str = request.form.get('data')
+    paper_meta = {}
+    if paper_meta_json_str:
+        try:
+            paper_meta = json.loads(paper_meta_json_str)
+        except json.JSONDecodeError:
+            return jsonify({"message": "Invalid paper metadata format"}), 400
+
+    paper_title = paper_meta.get('title', secure_filename(file.filename).rsplit('.', 1)[0])
+    paper_type = paper_meta.get('type', 'general') 
+    paper_course = paper_meta.get('course', 'Uncategorized') 
+    paper_grade = paper_meta.get('grade', 'Any') 
+
+    papers_content = load_json(PAPERS_FILE) 
+    papers_list = papers_content.get('papers', [])
     
-    papers = load_json('papers.json')
-    
+    file_bytes = file.read() # Read file content once
+
     try:
         drive_link = upload_to_drive(
-            file.read(),
-            f"paper_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}",
+            file_bytes, 
+            f"paper_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{secure_filename(file.filename)}",
             file.content_type
         )
         
+        new_paper_id = f"doc{int(datetime.now().timestamp())}{len(papers_list) + 1}"
         new_paper = {
-            "id": f"doc{len(papers['papers']) + 1}",
-            "title": paper_data['title'],
-            "type": paper_data['type'],
-            "course": paper_data['course'],
+            "id": new_paper_id,
+            "name": paper_title, 
+            "title": paper_title, 
+            "type": paper_type,
+            "course": paper_course, 
+            "grade": paper_grade,
+            "year": str(datetime.now().year), 
             "uploadDate": datetime.now().strftime('%Y-%m-%d'),
-            "size": f"{len(file.read()) / 1024:.0f} KB",
-            "format": file.filename.split('.')[-1].lower(),
-            "driveLink": drive_link
+            "size": f"{len(file_bytes) / 1024:.0f} KB", 
+            "format": secure_filename(file.filename).split('.')[-1].lower() if '.' in secure_filename(file.filename) else 'unknown',
+            "link": drive_link, 
+            "driveLink": drive_link 
         }
         
-        papers['papers'].append(new_paper)
-        save_json('papers.json', papers)
+        papers_list.append(new_paper)
+        save_json(PAPERS_FILE, {"papers": papers_list})
         
         return jsonify({
             "message": "Paper uploaded successfully",
-            "paper": new_paper
-        })
+            "paper": new_paper 
+        }), 201
         
     except Exception as e:
+        print(f"Error during paper upload: {e}")
         return jsonify({"message": f"Upload failed: {str(e)}"}), 500
+
+@app.route('/teacher/schedule-class', methods=['POST'])
+def teacher_schedule_class():
+    form_data = request.json 
+    
+    auth_email = form_data.get('auth_email') 
+    auth_token = form_data.get('auth_token')
+
+    is_teacher = (auth_email == 'ssjayasundara@yahoo.com0')
+    if not is_teacher or not verify_token(auth_email, auth_token):
+        return jsonify({"message": "Unauthorized to schedule class"}), 401
+
+    try:
+        title = form_data.get('title')
+        course_name = form_data.get('course') 
+        class_date_str = form_data.get('date') 
+        start_time_str = form_data.get('startTime') 
+        duration_minutes = int(form_data.get('duration', 60)) 
+        description = form_data.get('description', '')
+        room = form_data.get('room', 'Online') 
+        class_grade = form_data.get('grade', 'Any Grade') 
+        default_zoom_link = f"https://zoom.us/j/example{int(datetime.now().timestamp())}"
+        zoom_link = form_data.get('zoomLink', default_zoom_link)
+
+        if not all([title, course_name, class_date_str, start_time_str]):
+            return jsonify({"message": "Missing required fields (title, course, date, time)"}), 400
+
+        class_start_datetime = datetime.strptime(f"{class_date_str} {start_time_str}", "%Y-%m-%d %H:%M")
+        class_end_datetime = class_start_datetime + timedelta(minutes=duration_minutes)
+        end_time_str_formatted = class_end_datetime.strftime("%H:%M")
+
+        all_classes_data = load_json(CLASSES_FILE)
+        classes_list = all_classes_data.get('classes', [])
+        
+        new_class_id = f"cls{int(datetime.now().timestamp())}_{len(classes_list)}"
+
+        new_class = {
+            "id": new_class_id,
+            "title": title,
+            "instructor": "Mr. Sanjaya", 
+            "course": course_name, 
+            "date": class_date_str,
+            "time": start_time_str, 
+            "startTime": start_time_str, 
+            "endTime": end_time_str_formatted, 
+            "duration": f"{duration_minutes} mins", 
+            "spots": form_data.get('spots', 20), 
+            "grade": class_grade,
+            "zoomLink": zoom_link,
+            "description": description,
+            "room": room,
+            "studentsEnrolled": 0,
+            "studentsAttended": 0 
+        }
+        classes_list.append(new_class)
+        save_json(CLASSES_FILE, {"classes": classes_list})
+
+        return jsonify({"message": "Class scheduled successfully", "class": new_class}), 201
+    except ValueError as ve:
+        print(f"ValueError scheduling class: {ve}")
+        return jsonify({"message": f"Invalid data format: {str(ve)}"}), 400
+    except Exception as e:
+        print(f"Error scheduling class: {e}")
+        return jsonify({"message": "An error occurred while scheduling class"}), 500
+
+# Teacher Panel Backend Logic - END
 
 if __name__ == '__main__':
     # Ensure essential JSON files are initialized if they don't exist
