@@ -436,6 +436,58 @@ TARGET_USER_ID = 795492792176082944
 ALLOWED_USERS = os.getenv('ALLOWED_USERS', '').split(',') # For bot commands
 loop = asyncio.get_event_loop()
 
+@app.route('/update-profile', methods=['POST'])
+def update_profile():
+    try:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"message": "Authorization token is missing or malformed"}), 401
+        
+        token = auth_header.split(' ')[1]
+        data = request.get_json()
+        email = data.get('email') # Email should be sent by client for verification
+        
+        new_username = data.get('username')
+        new_grade = data.get('grade')
+        # new_birthdate = data.get('birthdate') # If making birthdate editable
+
+        if not email:
+            return jsonify({"message": "Email is required for profile update"}), 400
+
+        if not verify_token(email, token):
+            return jsonify({"message": "Invalid or expired session. Please log in again."}), 401
+
+        if not new_username or not new_grade:
+            return jsonify({"message": "Username and Grade cannot be empty"}), 400
+        
+        # Basic validation for grade format (e.g., "Grade X")
+        if not isinstance(new_grade, str) or not new_grade.lower().startswith('grade ') or len(new_grade.split()) < 2:
+            return jsonify({"message": "Invalid grade format. Expected format: 'Grade X' (e.g., Grade 10)"}), 400
+
+
+        users = load_json(USERS_FILE)
+        if email not in users:
+            return jsonify({"message": "User not found"}), 404
+
+        # Check if new username is already taken by another user (excluding self)
+        for user_email, user_data in users.items():
+            if user_email != email and user_data.get('username', '').lower() == new_username.lower():
+                return jsonify({"message": "Username already taken by another user"}), 409
+        
+        users[email]['username'] = new_username
+        users[email]['grade'] = new_grade
+        # if new_birthdate: users[email]['birthdate'] = new_birthdate # If making birthdate editable
+        
+        save_json(USERS_FILE, users)
+        
+        send_embed_to_discord("Profile Updated", f"User profile updated for: {email}\nNew Username: {new_username}\nNew Grade: {new_grade}")
+        return jsonify({"message": "Profile updated successfully"}), 200
+
+    except Exception as e:
+        print(f"Error updating profile: {e}")
+        return jsonify({"message": "An error occurred while updating profile"}), 500
+
+
 @app.route('/SupportForm', methods=['POST'])
 def handle_form():
     data = request.json
