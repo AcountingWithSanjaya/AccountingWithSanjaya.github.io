@@ -188,11 +188,151 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '../Purchase/index.html';
     });
 
-    document.querySelector('.primary-button').addEventListener('click', function() {
-        alert('Edit profile functionality coming soon!');
+    // Edit Profile Functionality
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const exportDataBtn = document.getElementById('export-data-btn');
+    // const deleteAccountBtn is already defined below
+
+    const usernameInput = document.getElementById('username');
+    const gradeInput = document.getElementById('profile-page-grade');
+    // Add birthdateInput if it becomes editable later
+    // const birthdateInput = document.getElementById('birthdate');
+
+    let originalProfileData = {}; // To store data for cancellation
+
+    function toggleEditMode(enable) {
+        if (enable) {
+            // Store original values
+            originalProfileData.username = usernameInput.value;
+            originalProfileData.grade = gradeInput.value;
+
+            // Make fields editable
+            usernameInput.readOnly = false;
+            gradeInput.readOnly = false;
+            usernameInput.classList.remove('bg-gray-50');
+            gradeInput.classList.remove('bg-gray-50');
+            // birthdateInput.readOnly = false; // If making birthdate editable
+            // birthdateInput.classList.remove('bg-gray-50');
+
+            editProfileBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            editProfileBtn.removeEventListener('click', handleEditProfileClick); // Remove old listener
+            editProfileBtn.addEventListener('click', handleSaveChangesClick); // Add new listener
+
+            cancelEditBtn.style.display = 'inline-flex';
+            exportDataBtn.style.display = 'none';
+            if(deleteAccountBtn) deleteAccountBtn.style.display = 'none'; // deleteAccountBtn might not exist if modal elements are missing
+        } else {
+            // Make fields read-only and restore original values if cancelled
+            usernameInput.readOnly = true;
+            gradeInput.readOnly = true;
+            usernameInput.classList.add('bg-gray-50');
+            gradeInput.classList.add('bg-gray-50');
+            // birthdateInput.readOnly = true;
+            // birthdateInput.classList.add('bg-gray-50');
+
+            // Restore original values if they exist (e.g., after a cancel)
+            if (originalProfileData.username) usernameInput.value = originalProfileData.username;
+            if (originalProfileData.grade) gradeInput.value = originalProfileData.grade;
+
+
+            editProfileBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Profile';
+            editProfileBtn.removeEventListener('click', handleSaveChangesClick);
+            editProfileBtn.addEventListener('click', handleEditProfileClick);
+            
+            cancelEditBtn.style.display = 'none';
+            exportDataBtn.style.display = 'inline-flex';
+            if(deleteAccountBtn) deleteAccountBtn.style.display = 'inline-flex';
+        }
+    }
+
+    function handleEditProfileClick() {
+        toggleEditMode(true);
+    }
+
+    async function handleSaveChangesClick() {
+        const updatedData = {
+            username: usernameInput.value.trim(),
+            grade: gradeInput.value.trim(),
+            // birthdate: birthdateInput.value, // if making birthdate editable
+        };
+
+        if (!updatedData.username || !updatedData.grade) {
+            showNotification('Username and Grade cannot be empty.', 'error');
+            return;
+        }
+
+        // Basic validation for grade (example: starts with "Grade ")
+        if (!updatedData.grade.startsWith('Grade ') || updatedData.grade.length < 7) {
+             showNotification('Grade format should be "Grade X" (e.g., Grade 10).', 'error');
+            return;
+        }
+
+
+        const currentEmail = localStorage.getItem('userEmail');
+        const currentToken = localStorage.getItem('authToken');
+
+        if (!currentEmail || !currentToken) {
+            showNotification('Authentication error. Please log in again.', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://127.0.0.1:10209/update-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentToken}`
+                },
+                body: JSON.stringify({
+                    email: currentEmail,
+                    username: updatedData.username,
+                    grade: updatedData.grade,
+                    // birthdate: updatedData.birthdate // if making birthdate editable
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Failed to update profile.');
+            }
+
+            showNotification('Profile updated successfully!', 'success');
+            // Update the displayed name in the sidebar if username changed
+            document.querySelector('.profile-name').textContent = updatedData.username;
+            // Update the grade in the sidebar
+            const gradeSpan = document.getElementById('profile-grade');
+            if(gradeSpan) gradeSpan.textContent = `Grade: ${updatedData.grade}`;
+            
+            originalProfileData.username = updatedData.username; // Update original data to new saved values
+            originalProfileData.grade = updatedData.grade;
+
+
+            toggleEditMode(false);
+
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            showNotification(error.message, 'error');
+            // Optionally, revert to original values on error or let user correct
+            // usernameInput.value = originalProfileData.username;
+            // gradeInput.value = originalProfileData.grade;
+        }
+    }
+
+    cancelEditBtn.addEventListener('click', function() {
+        // Restore original values
+        usernameInput.value = originalProfileData.username;
+        gradeInput.value = originalProfileData.grade;
+        // birthdateInput.value = originalProfileData.birthdate; // if making birthdate editable
+        toggleEditMode(false);
     });
 
-    document.querySelector('.secondary-button').addEventListener('click', function() {
+    // Initial setup for the edit button
+    editProfileBtn.addEventListener('click', handleEditProfileClick);
+
+
+    exportDataBtn.addEventListener('click', function() {
         alert('Preparing data export...');
     });
 
