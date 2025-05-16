@@ -25,7 +25,7 @@ export const getAuthHeaders = (isFormData = false) => {
   // For POST requests, it's better to include email in the JSON body.
   // For FormData, include it as a form field.
   return headers;
-  };
+  // Remove extra closing brace here: };
 };
 
 export const checkTeacherAuth = async () => {

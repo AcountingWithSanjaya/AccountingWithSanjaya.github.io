@@ -95,29 +95,61 @@ def generate_token():
     return ''.join(secrets.choice(chars) for _ in range(64))
 
 def cleanup_sessions():
-    sessions = load_json(SESSIONS_FILE)
+    sessions_data = load_json(SESSIONS_FILE)
     current_time = datetime.now()
-    sessions = {
-        email: data for email, data in sessions.items()
-        if datetime.fromisoformat(data['created_at']) + timedelta(hours=720) > current_time
-    }
-    save_json(SESSIONS_FILE, sessions)
+    cleaned_sessions_data = {}
+
+    for email, user_session_info in sessions_data.items():
+        if isinstance(user_session_info, dict) and "active_tokens" in user_session_info:
+            still_valid_tokens = [
+                s_token_info for s_token_info in user_session_info["active_tokens"]
+                if datetime.fromisoformat(s_token_info['created_at']) + timedelta(hours=24) > current_time # 24-hour expiry for active tokens
+            ]
+            if still_valid_tokens: # Only keep user entry if they have any valid tokens left
+                cleaned_sessions_data[email] = {"active_tokens": still_valid_tokens}
+        # Old single-token format entries will be naturally pruned by not being added to cleaned_sessions_data
+    
+    save_json(SESSIONS_FILE, cleaned_sessions_data)
 
 def verify_token(email, token):
-    sessions = load_json(SESSIONS_FILE)
+    sessions_data = load_json(SESSIONS_FILE)
+    user_session_info = sessions_data.get(email)
+
+    if not user_session_info or not isinstance(user_session_info, dict) or "active_tokens" not in user_session_info:
+        return False # User has no sessions or session data is malformed
+
+    active_tokens = user_session_info.get("active_tokens", [])
+    token_to_verify_is_valid = False
     
-    session = sessions.get(email)
+    updated_tokens_for_user = []
+    token_was_present_in_list = any(s['token'] == token for s in active_tokens)
+
+    if not token_was_present_in_list:
+        return False # The token to verify was not found at all
+
+    for session_token_info in active_tokens:
+        session_time = datetime.fromisoformat(session_token_info['created_at'])
+        is_expired = (datetime.now() - session_time > timedelta(hours=24))
+
+        if session_token_info['token'] == token:
+            if not is_expired:
+                updated_tokens_for_user.append(session_token_info)
+                token_to_verify_is_valid = True
+            # If it is the token and it's expired, it's not added to updated_tokens_for_user, thus removed.
+        elif not is_expired:
+            # Keep other non-expired tokens
+            updated_tokens_for_user.append(session_token_info)
+
+    if not updated_tokens_for_user:
+        # If all tokens (including the one being verified or others) were expired or removed
+        if email in sessions_data:
+            del sessions_data[email]
+    else:
+        sessions_data[email]["active_tokens"] = updated_tokens_for_user
     
-    if not session or session['token'] != token:
-        return False
-        
-    session_time = datetime.fromisoformat(session['created_at'])
-    if datetime.now() - session_time > timedelta(hours=24):
-        del sessions[email]
-        save_json(SESSIONS_FILE, sessions)
-        return False
-        
-    return True
+    save_json(SESSIONS_FILE, sessions_data)
+    
+    return token_to_verify_is_valid
 
 def load_classes():
     # This function seems to load only 3 classes, which might not be what's always intended.
@@ -275,19 +307,29 @@ def login():
         if not user or not check_password_hash(user["password"], password):
             return jsonify({"message": "Invalid username/email or password"}), 401
 
-        cleanup_sessions()
+        cleanup_sessions() # General cleanup can be run periodically or here
 
-        token = generate_token()
-        sessions = load_json(SESSIONS_FILE)
-        sessions[email] = {
-            'token': token,
+        new_token = generate_token()
+        sessions_data = load_json(SESSIONS_FILE)
+
+        # Ensure the user's entry is in the new format
+        if email not in sessions_data or not isinstance(sessions_data.get(email), dict) or "active_tokens" not in sessions_data.get(email, {}):
+            sessions_data[email] = {"active_tokens": []}
+        
+        # Ensure active_tokens is a list (it should be if previous check passed, but defensive)
+        if not isinstance(sessions_data[email].get("active_tokens"), list):
+            sessions_data[email]["active_tokens"] = []
+
+        sessions_data[email]["active_tokens"].append({
+            'token': new_token,
             'created_at': datetime.now().isoformat()
-        }
-        save_json(SESSIONS_FILE, sessions)
+            # Optionally, add device info here: 'device_info': request.headers.get('User-Agent')
+        })
+        save_json(SESSIONS_FILE, sessions_data)
 
         return jsonify({
             "message": "Login successful!",
-            "token": token,
+            "token": new_token, # Return the new token for this session
             "username": user['username'],
             "email": email
         }), 200
@@ -427,6 +469,50 @@ def receive_ping():
     sender_ip = request.remote_addr
     return f"Received ping from {sender_ip}"
 
+@app.route('/logout', methods=['POST'])
+def logout():
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        token_to_logout = data.get('token')
+
+        if not email or not token_to_logout:
+            return jsonify({"message": "Email and token are required"}), 400
+
+        sessions_data = load_json(SESSIONS_FILE)
+        user_session_info = sessions_data.get(email)
+
+        if not user_session_info or not isinstance(user_session_info, dict) or "active_tokens" not in user_session_info:
+            # User not found or no active sessions, effectively logged out
+            return jsonify({"message": "Logout successful or session not found"}), 200
+
+        active_tokens = user_session_info.get("active_tokens", [])
+        
+        # Filter out the token to be logged out
+        updated_tokens = [s for s in active_tokens if s['token'] != token_to_logout]
+
+        if len(updated_tokens) == len(active_tokens):
+            # Token was not found, could mean already logged out or invalid token.
+            # Consider this a success from client's perspective.
+            pass
+
+        if not updated_tokens:
+            # If no tokens are left, remove the user's entry from sessions
+            if email in sessions_data:
+                del sessions_data[email]
+        else:
+            sessions_data[email]["active_tokens"] = updated_tokens
+            
+        save_json(SESSIONS_FILE, sessions_data)
+        
+        # Clear client-side session cookies if any were set by HttpOnly, though current app uses localStorage
+        # response = jsonify({"message": "Logout successful"})
+        # response.set_cookie('session_token', '', expires=0) # Example if using cookies
+        return jsonify({"message": "Logout successful"}), 200
+
+    except Exception as e:
+        print(f"Error during logout: {e}")
+        return jsonify({"message": "An error occurred during logout"}), 500
 
 
 # Support, Classes stuff

@@ -21,11 +21,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelector('.avatar').textContent = userEmail ? userEmail.charAt(0).toUpperCase() : 'T';
     
     // Initialize components with data from API
-    initNavigation();
+    initNavigation(); // This initializes navigation links, including potential logout listeners if added there
     initDashboard(teacherData); // Expects teacherData.stats, .recordings, .classes.upcoming
     initRecordings(teacherData.recordings, teacherData.courses); // Pass courses for the dropdown in modal
     initScheduler(teacherData.classes, teacherData.courses); // Pass courses for the dropdown
     initPapers(teacherData.papers, teacherData.courses); // Pass courses for the dropdown
+
+    // Setup Logout Button for Teacher Panel
+    const teacherLogoutBtn = document.getElementById('teacher-logout-btn');
+    if (teacherLogoutBtn) {
+      teacherLogoutBtn.addEventListener('click', async () => {
+        const userEmailForLogout = localStorage.getItem('userEmail');
+        const authTokenForLogout = localStorage.getItem('authToken');
+
+        if (!userEmailForLogout || !authTokenForLogout) {
+          // Show some form of notification if possible, or just proceed
+          console.warn('Auth details missing, clearing local session.');
+          clearTeacherLocalStorageAndRedirect();
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/logout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }, // Standard headers for JSON
+            body: JSON.stringify({
+              email: userEmailForLogout,
+              token: authTokenForLogout
+            })
+          });
+          // const result = await response.json(); // Optional: check result.message
+
+          if (response.ok) {
+            // console.log('Teacher logout successful on server.');
+          } else {
+            // console.warn('Teacher logout failed on server, clearing local session anyway.');
+          }
+        } catch (error) {
+          console.error('Error during teacher logout:', error);
+        } finally {
+          clearTeacherLocalStorageAndRedirect();
+        }
+      });
+    }
 
   } catch (error) {
     console.error('Error initializing application:', error);
@@ -45,3 +83,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 300);
   }
 });
+
+function clearTeacherLocalStorageAndRedirect() {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('userEmail');
+  localStorage.removeItem('username'); // If teacher panel uses it
+  // Add any other relevant keys used by the teacher panel
+  window.location.href = '../Login and Register/Login.html'; // Redirect to main login
+}

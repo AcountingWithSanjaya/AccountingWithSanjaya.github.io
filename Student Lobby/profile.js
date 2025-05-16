@@ -192,6 +192,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const editProfileBtn = document.getElementById('edit-profile-btn');
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
     const exportDataBtn = document.getElementById('export-data-btn');
+    const logoutBtn = document.createElement('button'); // Create logout button
+    logoutBtn.type = 'button';
+    logoutBtn.className = 'secondary-button'; // Or any other appropriate class
+    logoutBtn.id = 'logout-btn';
+    logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
     // const deleteAccountBtn is already defined below
 
     const usernameInput = document.getElementById('username');
@@ -221,6 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             cancelEditBtn.style.display = 'inline-flex';
             exportDataBtn.style.display = 'none';
+            logoutBtn.style.display = 'none'; // Hide logout during edit mode
             if(deleteAccountBtn) deleteAccountBtn.style.display = 'none'; // deleteAccountBtn might not exist if modal elements are missing
         } else {
             // Make fields read-only and restore original values if cancelled
@@ -242,6 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             cancelEditBtn.style.display = 'none';
             exportDataBtn.style.display = 'inline-flex';
+            logoutBtn.style.display = 'inline-flex'; // Show logout when not editing
             if(deleteAccountBtn) deleteAccountBtn.style.display = 'inline-flex';
         }
     }
@@ -331,6 +338,64 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial setup for the edit button
     editProfileBtn.addEventListener('click', handleEditProfileClick);
 
+    // Add logout button to the DOM
+    const actionButtonsContainer = document.querySelector('.action-buttons');
+    if (actionButtonsContainer) {
+        actionButtonsContainer.appendChild(logoutBtn); // Add logout button to action buttons
+        logoutBtn.style.display = 'inline-flex'; // Ensure it's visible initially
+    }
+    
+    logoutBtn.addEventListener('click', async function() {
+        const userEmailForLogout = localStorage.getItem('userEmail');
+        const authTokenForLogout = localStorage.getItem('authToken');
+
+        if (!userEmailForLogout || !authTokenForLogout) {
+            showNotification('Authentication details not found. Cannot log out.', 'error');
+            // Force clear local storage and redirect if auth details are missing client-side
+            clearLocalStorageAndRedirect();
+            return;
+        }
+
+        try {
+            const response = await fetch('http://127.0.0.1:10209/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: userEmailForLogout,
+                    token: authTokenForLogout
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showNotification('Logged out successfully. Redirecting...', 'success');
+            } else {
+                // Even if backend fails, client should proceed to clear session
+                showNotification(result.message || 'Logout failed on server, clearing local session.', 'warning');
+            }
+        } catch (error) {
+            console.error('Error logging out:', error);
+            showNotification('Error during logout, clearing local session.', 'error');
+        } finally {
+            clearLocalStorageAndRedirect();
+        }
+    });
+
+    function clearLocalStorageAndRedirect() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('username');
+        localStorage.removeItem('rememberedEmail');
+        localStorage.removeItem('rememberMe');
+        localStorage.removeItem('returncustomer');
+        // Add any other relevant keys used by your app
+        setTimeout(() => {
+            window.location.href = '../Login and Register/Login.html';
+        }, 1500); // Delay for notification visibility
+    }
 
     exportDataBtn.addEventListener('click', function() {
         // Gather data from the input fields and other displayed info
