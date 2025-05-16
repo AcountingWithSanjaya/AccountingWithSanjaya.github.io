@@ -29,6 +29,8 @@ RECORDINGS_FILE = 'recordings.json' # Assuming this is in ZBackend/
 COURSES_FILE = 'courses.json' # Assuming this is in ZBackend/
 # MUSIC_FILE = 'music.json' # Not used in this request
 
+TEACHER_EMAILS = ['ssjayasundara@yahoo.com', 'omareeto2012@hotmail.com']
+
 # PayHere Configuration
 PAYHERE_MERCHANT_ID = os.getenv('PAYHERE_MERCHANT_ID', 'YOUR_SANDBOX_MERCHANT_ID')
 PAYHERE_MERCHANT_SECRET = os.getenv('PAYHERE_MERCHANT_SECRET', 'YOUR_SANDBOX_MERCHANT_SECRET')
@@ -1258,7 +1260,7 @@ def confirm_teacher_logged_in():
     # For a real system, check against a list of teacher emails or a role.
     # Using the hardcoded email for now as it was the previous check.
     # Ensure this email is correct and does not have typos like a trailing '0'.
-    is_teacher = (email == 'ssjayasundara@yahoo.com') 
+    is_teacher = (email in TEACHER_EMAILS)
 
     if not is_teacher:
          return jsonify({"message": "User is not authorized as a teacher"}), 403
@@ -1275,7 +1277,7 @@ def load_teacher():
     token = data.get('token')
     
     # Ensure this email is correct and does not have typos like a trailing '0'.
-    is_teacher = (email == 'ssjayasundara@yahoo.com')  # Replace with actual teacher check logic
+    is_teacher = (email in TEACHER_EMAILS)  # Replace with actual teacher check logic
 
     if not is_teacher:
         return jsonify({"message": "User is not authorized as a teacher"}), 403
@@ -1351,7 +1353,7 @@ def upload_recording():
     token = request.form.get('token')
     
     # Ensure this email is correct and does not have typos like a trailing '0'.
-    is_teacher = (email == 'ssjayasundara@yahoo.com')
+    is_teacher = (email in TEACHER_EMAILS)
     if not is_teacher or not verify_token(email, token):
         return jsonify({"message": "Unauthorized"}), 401
     
@@ -1484,7 +1486,7 @@ def teacher_schedule_class():
     auth_token = form_data.get('auth_token')
 
     # Ensure this email is correct and does not have typos like a trailing '0'.
-    is_teacher = (auth_email == 'ssjayasundara@yahoo.com')
+    is_teacher = (auth_email in TEACHER_EMAILS)
     if not is_teacher or not verify_token(auth_email, auth_token):
         return jsonify({"message": "Unauthorized to schedule class"}), 401
 
