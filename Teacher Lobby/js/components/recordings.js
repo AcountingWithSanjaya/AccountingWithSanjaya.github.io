@@ -199,58 +199,72 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
     uploadModal.classList.remove('show');
   };
   
-  // Simulate upload progress
-  const simulateUpload = () => {
-    let progress = 0;
+  // Actual upload function
+  const handleRecordingUpload = async (recordingId, fileToUpload, metadata) => {
     progressContainer.classList.remove('hidden');
-    progressBar.style.width = '0%';
+    progressBar.style.width = '0%'; // Reset progress bar
     progressText.textContent = '0%';
-    
-    const interval = setInterval(() => {
-      progress += Math.random() * 10;
-      if (progress > 100) progress = 100;
+    successMessage.classList.add('hidden');
+    errorMessage.classList.add('hidden');
+
+    // For real progress, you'd use XHR events or fetch with ReadableStream
+    // Here, we'll just show an indeterminate progress then success/failure
+    progressBar.style.width = '50%'; // Simulate some progress
+    progressText.textContent = 'Uploading...';
+
+    try {
+      const result = await apiUploadRecording(recordingId, fileToUpload, metadata); // Call API
       
-      progressBar.style.width = `${progress}%`;
-      progressText.textContent = `${Math.round(progress)}%`;
-      
-      if (progress === 100) {
-        clearInterval(interval);
-        // Show success message after a short delay
-        setTimeout(() => {
-          successMessage.classList.remove('hidden');
-          // Close modal after showing success
-          setTimeout(() => {
-            closeUploadModal();
-            
-            // Update recording status to 'uploaded'
-            recordings.forEach(rec => {
-              if (rec.id === 'rec1') {
-                rec.status = 'uploaded';
-              }
-            });
-            
-            // Re-render recordings
-            applyFilters();
-          }, 2000);
-        }, 500);
+      progressBar.style.width = '100%';
+      progressText.textContent = '100%';
+      successMessage.textContent = result.message || 'Recording uploaded successfully!';
+      successMessage.classList.remove('hidden');
+
+      // Update the local recordings data
+      // It's crucial that 'recordings' here is the same array instance used by other functions.
+      const recordingIndex = recordings.findIndex(rec => rec.id === recordingId);
+      if (recordingIndex !== -1 && result.recording) {
+        recordings[recordingIndex] = result.recording; // Update with data from backend
+      } else if (result.recording) { // If not found, maybe it's a new one (though current logic implies update)
+        recordings.push(result.recording);
       }
-    }, 200);
-  };
-  
-  // Event listeners
-  filterButton.addEventListener('click', applyFilters);
-  closeModalBtn.addEventListener('click', closeUploadModal);
-  
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-      selectedFile.textContent = `Selected file: ${e.target.files[0].name}`;
-      selectedFile.classList.remove('hidden');
-    } else {
-      selectedFile.classList.add('hidden');
+      
+      applyFilters(); // Re-render the recordings list which uses the 'recordings' array
+      
+      // Also update recordings on the dashboard if this function is shared/reused
+      // This might require passing the dashboard rendering function or a callback
+      
+      setTimeout(() => {
+        closeUploadModal();
+      }, 2000);
+
+    } catch (error) {
+      console.error('Upload failed:', error);
+      progressBar.style.width = '0%'; // Or show error state
+      progressText.textContent = 'Error';
+      errorMessage.textContent = error.message || 'Failed to upload recording.';
+      errorMessage.classList.remove('hidden');
     }
-  });
+  };
+
+  // Event listeners
+  if (filterButton) filterButton.addEventListener('click', applyFilters);
   
-  uploadForm.addEventListener('submit', (e) => {
+  if (closeModalBtn) closeModalBtn.addEventListener('click', closeUploadModal);
+  
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        selectedFileDisplay.textContent = `Selected file: ${e.target.files[0].name}`; // Ensure this is selectedFileDisplay
+        selectedFileDisplay.classList.remove('hidden');
+      } else {
+        selectedFileDisplay.classList.add('hidden');
+      }
+    });
+  }
+  
+  if (uploadForm) {
+    uploadForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const recordingId = uploadForm.dataset.recordingId;
       const fileToUpload = fileInput.files[0];

@@ -1076,13 +1076,17 @@ def confirm_teacher_logged_in():
     if not email or not token:
         return jsonify({"message": "Missing credentials"}), 400
         
-    if email != 'ssjayasundara@yahoo.com0':
-        return jsonify({"message": "Not authorized"}), 401
+    # For a real system, check against a list of teacher emails or a role.
+    # Using the hardcoded email for now as it was the previous check.
+    is_teacher = (email == 'ssjayasundara@yahoo.com0') 
+
+    if not is_teacher:
+         return jsonify({"message": "User is not authorized as a teacher"}), 403
+
+    if not verify_token(email, token): # verify_token handles session validity
+        return jsonify({"message": "Invalid or expired token"}), 401
         
-    if not verify_token(email, token):
-        return jsonify({"message": "Invalid token"}), 401
-        
-    return jsonify({"message": "Authorized"}), 200
+    return jsonify({"message": "Teacher authorized"}), 200
 
 @app.route('/loadteacher', methods=['POST'])
 def load_teacher():
@@ -1090,37 +1094,74 @@ def load_teacher():
     email = data.get('email')
     token = data.get('token')
     
-    if email != 'ssjayasundara@yahoo.com0':
-        return jsonify({"message": "Not authorized"}), 401
+    is_teacher = (email == 'ssjayasundara@yahoo.com0')  # Replace with actual teacher check logic
+
+    if not is_teacher:
+        return jsonify({"message": "User is not authorized as a teacher"}), 403
         
-    if not verify_token(email, token):
-        return jsonify({"message": "Unauthorized"}), 401
+    if not verify_token(email, token): # verify_token handles session validity
+        return jsonify({"message": "Invalid or expired token"}), 401
     
-    classes_data = load_json('classes.json')
-    recordings_data = load_json('recordings.json')
-    papers_data = load_json('papers.json')
+    classes_data_full = load_json(CLASSES_FILE) # Expected: {"classes": [...]}
+    recordings_data_full = load_json(RECORDINGS_FILE) # Expected: {"recordings": [...]}
+    papers_data_full = load_json(PAPERS_FILE) # Expected: {"papers": [...]}
+    courses_data_full = load_json(COURSES_FILE) # Expected: {"courses": [...]}
+
+    all_users = load_json(USERS_FILE)
     
+    classes_list = classes_data_full.get('classes', [])
+    recordings_list = recordings_data_full.get('recordings', [])
+    papers_list = papers_data_full.get('papers', [])
+    courses_list = courses_data_full.get('courses', [])
+
     # Calculate stats
-    pending_recordings = sum(1 for rec in recordings_data['recordings'] 
-                           if rec['status'] == 'pending')
-    upcoming_classes = sum(1 for cls in classes_data['classes'] 
-                         if datetime.strptime(cls['date'], '%Y-%m-%d') > datetime.now())
+    pending_recordings = sum(1 for rec in recordings_list if rec.get('status') == 'pending')
     
+    now_date = datetime.now().date()
+    upcoming_classes_list = []
+    past_classes_list = []
+    for cls in classes_list:
+        try:
+            # Ensure date and time are correctly parsed. Assuming 'time' is just HH:MM.
+            class_date_obj = datetime.strptime(cls.get('date'), '%Y-%m-%d').date()
+            
+            # Check if class is upcoming or past based on date only for simplicity here.
+            # Time comparison can be added if a class on the same day needs to be categorized.
+            if class_date_obj >= now_date:
+                 # For classes on the current day, one might compare times to be more precise
+                 # For now, same-day classes are considered upcoming until the day passes
+                upcoming_classes_list.append(cls)
+            else:
+                past_classes_list.append(cls)
+        except (ValueError, TypeError) as e:
+            print(f"Skipping class due to invalid date format or missing date: {cls.get('id')} - {e}")
+            continue
+
+    upcoming_classes_count = len(upcoming_classes_list)
+    
+    # Calculate totalStudents. This was previously sum of 'studentsEnrolled' per class.
+    # A more common interpretation is total registered users or students associated with the teacher.
+    # For now, using total registered users as per prior logic.
+    # The original 'totalStudents' calculation was: sum(cls['studentsEnrolled'] for cls in classes_data['classes'])
+    # We'll use the count of all users for now, as per the previous successful change's intent for totalStudents.
+    total_students = len(all_users) 
+    
+    papers_to_grade_count = len(papers_list) # Total number of papers
+
     return jsonify({
         "stats": {
             "pendingRecordings": pending_recordings,
-            "upcomingClasses": upcoming_classes,
-            "papersToGrade": len(papers_data['papers']),
-            "totalStudents": sum(cls['studentsEnrolled'] for cls in classes_data['classes'])
+            "upcomingClasses": upcoming_classes_count,
+            "papersToGrade": papers_to_grade_count,
+            "totalStudents": total_students
         },
-        "recordings": recordings_data['recordings'],
-        "classes": {
-            "upcoming": [cls for cls in classes_data['classes'] 
-                        if datetime.strptime(cls['date'], '%Y-%m-%d') > datetime.now()],
-            "past": [cls for cls in classes_data['classes'] 
-                    if datetime.strptime(cls['date'], '%Y-%m-%d') <= datetime.now()]
+        "recordings": recordings_list,
+        "classes": { 
+            "upcoming": sorted(upcoming_classes_list, key=lambda x: (x.get('date', ''), x.get('time', ''))),
+            "past": sorted(past_classes_list, key=lambda x: (x.get('date', ''), x.get('time', '')), reverse=True)
         },
-        "papers": papers_data['papers']
+        "papers": papers_list,
+        "courses": courses_list # Provide the list of courses
     })
 
 @app.route('/upload/recording', methods=['POST'])
