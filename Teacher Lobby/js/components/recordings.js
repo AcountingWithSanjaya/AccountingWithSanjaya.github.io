@@ -5,6 +5,7 @@ import { uploadRecording as apiUploadRecording } from '../api/config.js';
  * Handles the display and interaction with class recordings
  */
 export function initRecordings(recordings, coursesData) { // Added coursesData
+  console.log('[Recordings] Initializing with recordings:', recordings, 'and coursesData:', coursesData);
   // Get DOM elements
   const recordingsGrid = document.querySelector('.recordings-grid'); // This is for the main recordings page, not dashboard
   const dashboardRecordingsGrid = document.querySelector('#dashboard-page .recordings-grid'); // Grid on dashboard
@@ -29,6 +30,7 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
   
   // Render all recordings
   const renderRecordings = (recordingsData) => {
+    console.log('[Recordings] Rendering recordings. Count:', recordingsData.length);
     // Clear existing recordings
     recordingsGrid.innerHTML = '';
     
@@ -43,6 +45,7 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
     
     // Create a card for each recording
     recordingsData.forEach(recording => {
+      console.log('[Recordings] Creating card for recording:', recording.title);
       // Format date
       const formattedDate = new Date(recording.date).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -103,6 +106,7 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
     const selectedCourse = courseFilter.value;
     const selectedDate = dateFilter.value;
     const selectedStatus = statusFilter.value;
+    console.log('[Recordings] Applying filters. Course:', selectedCourse, 'Date:', selectedDate, 'Status:', selectedStatus);
     
     let filteredRecordings = [...recordings];
     
@@ -147,13 +151,15 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
   
   // Open the upload modal
   const openUploadModal = (recordingId) => {
+    console.log('[Recordings] Opening upload modal for recording ID:', recordingId);
     // Find the recording by ID
     const recording = recordings.find(rec => rec.id === recordingId);
     
     if (recording) {
+      console.log('[Recordings] Found recording for modal:', recording);
       // Reset the form
       uploadForm.reset();
-      selectedFile.classList.add('hidden');
+      selectedFileDisplay.classList.add('hidden'); // Use selectedFileDisplay
       progressContainer.classList.add('hidden');
       successMessage.classList.add('hidden');
       errorMessage.classList.add('hidden');
@@ -191,16 +197,20 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
 
       // Show the modal
       uploadModal.classList.add('show');
+    } else {
+      console.warn('[Recordings] Recording not found for ID:', recordingId);
     }
   };
   
   // Close the upload modal
   const closeUploadModal = () => {
+    console.log('[Recordings] Closing upload modal.');
     uploadModal.classList.remove('show');
   };
   
   // Actual upload function
   const handleRecordingUpload = async (recordingId, fileToUpload, metadata) => {
+    console.log('[Recordings] Handling recording upload. ID:', recordingId, 'File:', fileToUpload.name, 'Metadata:', metadata);
     progressContainer.classList.remove('hidden');
     progressBar.style.width = '0%'; // Reset progress bar
     progressText.textContent = '0%';
@@ -214,6 +224,7 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
 
     try {
       const result = await apiUploadRecording(recordingId, fileToUpload, metadata); // Call API
+      console.log('[Recordings] Upload API call successful. Result:', result);
       
       progressBar.style.width = '100%';
       progressText.textContent = '100%';
@@ -224,8 +235,10 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
       // It's crucial that 'recordings' here is the same array instance used by other functions.
       const recordingIndex = recordings.findIndex(rec => rec.id === recordingId);
       if (recordingIndex !== -1 && result.recording) {
+        console.log('[Recordings] Updating local recording data for ID:', recordingId);
         recordings[recordingIndex] = result.recording; // Update with data from backend
       } else if (result.recording) { // If not found, maybe it's a new one (though current logic implies update)
+        console.log('[Recordings] Adding new recording to local data:', result.recording);
         recordings.push(result.recording);
       }
       
@@ -233,13 +246,13 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
       
       // Also update recordings on the dashboard if this function is shared/reused
       // This might require passing the dashboard rendering function or a callback
-      
+      console.log('[Recordings] Upload complete, closing modal soon.');
       setTimeout(() => {
         closeUploadModal();
       }, 2000);
 
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error('[Recordings] Upload failed:', error);
       progressBar.style.width = '0%'; // Or show error state
       progressText.textContent = 'Error';
       errorMessage.textContent = error.message || 'Failed to upload recording.';
@@ -248,6 +261,7 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
   };
 
   // Event listeners
+  console.log('[Recordings] Setting up event listeners.');
   if (filterButton) filterButton.addEventListener('click', applyFilters);
   
   if (closeModalBtn) closeModalBtn.addEventListener('click', closeUploadModal);
@@ -293,11 +307,13 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
   
   // Initial render for the main recordings page grid
   if (recordingsGrid) { // Ensure this specific grid exists before rendering to it
+      console.log('[Recordings] Performing initial render for main recordings page.');
       renderRecordings(recordings);
   }
 
   // Populate course filter dropdown on the main recordings page
   if (courseFilter && coursesData) {
+    console.log('[Recordings] Populating course filter dropdown.');
     courseFilter.innerHTML = '<option value="all">All Courses</option>';
     coursesData.forEach(course => {
         const option = document.createElement('option');
@@ -306,4 +322,5 @@ export function initRecordings(recordings, coursesData) { // Added coursesData
         courseFilter.appendChild(option);
     });
   }
+  console.log('[Recordings] Initialization complete.');
 }

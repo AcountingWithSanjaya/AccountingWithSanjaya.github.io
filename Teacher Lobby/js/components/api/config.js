@@ -4,6 +4,7 @@ export const API_BASE_URL = 'http://127.0.0.1:10209'; // Base URL for the backen
 // const mockTeacherData = { ... };
 
 export const getAuthHeaders = (isFormData = false) => {
+  console.log('[API Config] getAuthHeaders called. isFormData:', isFormData);
   const token = localStorage.getItem('authToken');
   const email = localStorage.getItem('userEmail');
   
@@ -24,11 +25,13 @@ export const getAuthHeaders = (isFormData = false) => {
   // Or included if endpoint specifically needs it in header (X-User-Email was an example)
   // For POST requests, it's better to include email in the JSON body.
   // For FormData, include it as a form field.
+  console.log('[API Config] Auth headers generated:', headers);
   return headers;
   // Remove extra closing brace here: };
 };
 
 export const checkTeacherAuth = async () => {
+  console.log('[API Config] checkTeacherAuth called.');
   const email = localStorage.getItem('userEmail');
   const token = localStorage.getItem('authToken');
 
@@ -48,17 +51,17 @@ export const checkTeacherAuth = async () => {
 
     if (!response.ok) {
         const errorData = await response.json();
-        console.error('Teacher auth check failed:', errorData.message);
+        console.error('[API Config] Teacher auth check failed:', errorData.message);
         // If auth fails, redirect to login
         localStorage.removeItem('authToken');
         localStorage.removeItem('userEmail');
         window.location.href = '../Login and Register/Login.html';
         return false;
     }
-    // console.log('Teacher authentication successful.');
+    console.log('[API Config] Teacher authentication successful.');
     return true;
   } catch (error) {
-    console.error('Error during teacher auth check:', error);
+    console.error('[API Config] Error during teacher auth check:', error);
     // Potentially redirect or show a generic error message to the user
     window.location.href = '../Login and Register/Login.html'; // Example redirect
     return false;
@@ -66,11 +69,12 @@ export const checkTeacherAuth = async () => {
 };
 
 export const loadTeacherData = async () => {
+  console.log('[API Config] loadTeacherData called.');
   const email = localStorage.getItem('userEmail');
   const token = localStorage.getItem('authToken');
 
   if (!email || !token) {
-    console.error('Auth details missing for loadTeacherData');
+    console.error('[API Config] Auth details missing for loadTeacherData');
     throw new Error("Auth details not found for loading teacher data.");
   }
 
@@ -83,11 +87,14 @@ export const loadTeacherData = async () => {
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('[API Config] Failed to load teacher data:', errorData.message);
       throw new Error(errorData.message || 'Failed to load teacher data');
     }
-    return await response.json();
+    const data = await response.json();
+    console.log('[API Config] Teacher data loaded successfully:', data);
+    return data;
   } catch (error) {
-    console.error('Error loading teacher data:', error);
+    console.error('[API Config] Error loading teacher data:', error);
     // Handle error, e.g., show message to user, or redirect
     throw error; // Re-throw to be caught by calling function in main.js
   }
@@ -95,10 +102,12 @@ export const loadTeacherData = async () => {
 
 
 export const scheduleNewClass = async (classDetails) => {
+  console.log('[API Config] scheduleNewClass called with details:', classDetails);
   const email = localStorage.getItem('userEmail');
   const token = localStorage.getItem('authToken');
 
   if (!email || !token) {
+    console.error('[API Config] Authentication details not found for scheduling class.');
     throw new Error("Authentication details not found for scheduling class.");
   }
   
@@ -108,6 +117,7 @@ export const scheduleNewClass = async (classDetails) => {
     auth_email: email,
     auth_token: token
   };
+  console.log('[API Config] Scheduling class with payload:', payload);
 
   try {
     const response = await fetch(`${API_BASE_URL}/teacher/schedule-class`, {
@@ -117,20 +127,25 @@ export const scheduleNewClass = async (classDetails) => {
     });
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('[API Config] Failed to schedule new class:', errorData.message);
       throw new Error(errorData.message || 'Failed to schedule new class');
     }
-    return await response.json(); // Should return { message: "...", class: { ... } }
+    const result = await response.json(); // Should return { message: "...", class: { ... } }
+    console.log('[API Config] Class scheduled successfully:', result);
+    return result;
   } catch (error) {
-    console.error('Error scheduling new class:', error);
+    console.error('[API Config] Error scheduling new class:', error);
     throw error;
   }
 };
 
 export const uploadRecording = async (recordingId, file, metadata) => {
+  console.log('[API Config] uploadRecording called. ID:', recordingId, 'File:', file.name, 'Metadata:', metadata);
   const email = localStorage.getItem('userEmail');
   const token = localStorage.getItem('authToken');
 
   if (!email || !token) {
+    console.error('[API Config] Authentication details not found for uploading recording.');
     throw new Error("Authentication details not found for uploading recording.");
   }
 
@@ -146,6 +161,7 @@ export const uploadRecording = async (recordingId, file, metadata) => {
   if (metadata.courseName) formData.append('course', metadata.courseName); // if using course name
   if (metadata.date) formData.append('date', metadata.date);
   // Add any other metadata fields like description if needed by backend
+  console.log('[API Config] Uploading recording with FormData.');
 
   try {
     const response = await fetch(`${API_BASE_URL}/upload/recording`, { // Corrected endpoint
@@ -156,20 +172,25 @@ export const uploadRecording = async (recordingId, file, metadata) => {
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('[API Config] Failed to upload recording:', errorData.message);
       throw new Error(errorData.message || 'Failed to upload recording');
     }
-    return await response.json(); // Expects { message, driveLink, recording }
+    const result = await response.json(); // Expects { message, driveLink, recording }
+    console.log('[API Config] Recording uploaded successfully:', result);
+    return result;
   } catch (error) {
-    console.error('Error uploading recording:', error);
+    console.error('[API Config] Error uploading recording:', error);
     throw error;
   }
 };
 
 export const uploadPaper = async (paperData, file) => {
+  console.log('[API Config] uploadPaper called. Data:', paperData, 'File:', file.name);
   const email = localStorage.getItem('userEmail');
   const token = localStorage.getItem('authToken');
 
   if (!email || !token) {
+    console.error('[API Config] Authentication details not found for uploading paper.');
     throw new Error("Authentication details not found for uploading paper.");
   }
 
@@ -178,6 +199,7 @@ export const uploadPaper = async (paperData, file) => {
   formData.append('data', JSON.stringify(paperData)); // title, type, course
   formData.append('email', email); // Auth email
   formData.append('token', token); // Auth token
+  console.log('[API Config] Uploading paper with FormData.');
 
   try {
     const response = await fetch(`${API_BASE_URL}/upload/paper`, { // Corrected endpoint
@@ -188,11 +210,14 @@ export const uploadPaper = async (paperData, file) => {
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('[API Config] Failed to upload paper:', errorData.message);
       throw new Error(errorData.message || 'Failed to upload paper');
     }
-    return await response.json(); // Expects { message, paper }
+    const result = await response.json(); // Expects { message, paper }
+    console.log('[API Config] Paper uploaded successfully:', result);
+    return result;
   } catch (error) {
-    console.error('Error uploading paper:', error);
+    console.error('[API Config] Error uploading paper:', error);
     throw error;
   }
 };

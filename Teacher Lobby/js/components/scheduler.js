@@ -8,6 +8,7 @@ import { scheduleNewClass } from '../api/config.js';
  * Handles the class scheduling functionality
  */
 export function initScheduler(classesData, coursesData) { // Added coursesData
+  console.log('[Scheduler] Initializing with classesData:', classesData, 'and coursesData:', coursesData);
   // DOM elements
   const calendarGrid = document.getElementById('calendar-grid');
   const currentMonthEl = document.getElementById('current-month');
@@ -42,6 +43,7 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
 
   // Initialize the calendar
   const initCalendar = () => {
+    console.log('[Scheduler] initCalendar called.');
     populateCoursesDropdown(); // Populate courses first
     updateCalendarHeader();
     renderCalendar();
@@ -52,10 +54,12 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
   const updateCalendarHeader = () => {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     currentMonthEl.textContent = `${months[currentMonth]} ${currentYear}`;
+    console.log(`[Scheduler] Calendar header updated to: ${months[currentMonth]} ${currentYear}`);
   };
   
   // Render the calendar grid
   const renderCalendar = () => {
+    console.log('[Scheduler] renderCalendar called.');
     calendarGrid.innerHTML = '';
     
     // Add day headers (Sun, Mon, etc.)
@@ -162,6 +166,7 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
   // Select a date on the calendar
   const selectDate = (date) => {
     selectedDate = date;
+    console.log('[Scheduler] Date selected:', selectedDate);
     
     // Format date for input field (YYYY-MM-DD)
     const formattedDate = date.toISOString().split('T')[0];
@@ -173,6 +178,7 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
   
   // Previous month button handler
   prevMonthBtn.addEventListener('click', () => {
+    console.log('[Scheduler] Previous month button clicked.');
     currentMonth--;
     if (currentMonth < 0) {
       currentMonth = 11;
@@ -184,6 +190,7 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
   
   // Next month button handler
   nextMonthBtn.addEventListener('click', () => {
+    console.log('[Scheduler] Next month button clicked.');
     currentMonth++;
     if (currentMonth > 11) {
       currentMonth = 0;
@@ -195,6 +202,7 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
   
   // Render the classes lists
   const renderClasses = () => {
+    console.log('[Scheduler] renderClasses called.');
     // Clear containers
     upcomingClassesContainer.innerHTML = '';
     pastClassesContainer.innerHTML = '';
@@ -317,6 +325,8 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
   // Tab switching
   tabButtons.forEach(button => {
     button.addEventListener('click', () => {
+      const tabId = button.getAttribute('data-tab');
+      console.log(`[Scheduler] Tab button clicked: ${tabId}`);
       // Remove active class from all tabs
       tabButtons.forEach(btn => btn.classList.remove('active'));
       
@@ -329,7 +339,6 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
       });
       
       // Show selected tab content
-      const tabId = button.getAttribute('data-tab');
       document.getElementById(`${tabId}-tab`).classList.add('active');
     });
   });
@@ -337,6 +346,7 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
   // Schedule form submission
   scheduleForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    console.log('[Scheduler] Schedule form submitted.');
     
     // Get form values
     const title = document.getElementById('class-title').value.trim();
@@ -365,9 +375,11 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
         room
         // Backend will calculate endTime, generate ID, set instructor, etc.
     };
+    console.log('[Scheduler] Scheduling new class with details:', classDetails);
 
     scheduleNewClass(classDetails)
         .then(result => {
+            console.log('[Scheduler] Class scheduled successfully via API. Result:', result);
             // Add the newly scheduled class (returned from backend) to the local upcoming classes list
             if (classesData && classesData.upcoming && result.class) {
                  // Ensure the backend returns a class object that matches frontend structure or adapt here
@@ -380,6 +392,7 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
                      duration: parseInt(result.class.duration), // If backend sends "90 mins" string
                      studentsEnrolled: result.class.studentsEnrolled || 0
                 };
+                console.log('[Scheduler] Adding new class to local data:', newClassFromBackend);
                 classesData.upcoming.push(newClassFromBackend);
             }
             
@@ -391,11 +404,12 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
             alert('Class scheduled successfully!');
         })
         .catch(error => {
-            console.error('Failed to schedule class:', error);
+            console.error('[Scheduler] Failed to schedule class:', error);
             alert(`Error scheduling class: ${error.message}`);
         });
   });
   
   // Initialize the component
+  console.log('[Scheduler] Component setup complete. Initializing calendar...');
   initCalendar();
 }

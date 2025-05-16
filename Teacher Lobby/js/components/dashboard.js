@@ -1,4 +1,5 @@
 export function initDashboard(data) {
+  console.log('[Dashboard] Initializing with data:', data);
   // DOM elements
   const dashboardRecordingsGrid = document.querySelector('.dashboard-grid');
   const upcomingClassesContainer = document.querySelector('.upcoming-classes-container');
@@ -12,6 +13,7 @@ export function initDashboard(data) {
   
   // Update dashboard statistics
   const updateDashboardStats = (stats) => {
+    console.log('[Dashboard] Updating stats:', stats);
     document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = stats.pendingRecordings;
     document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = stats.upcomingClasses;
     document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = stats.papersToGrade;
@@ -20,6 +22,7 @@ export function initDashboard(data) {
   
   // Render recordings section
   const renderDashboardRecordings = (recordings) => {
+    console.log('[Dashboard] Rendering dashboard recordings. Total recordings received:', recordings.length);
     dashboardRecordingsGrid.innerHTML = '';
     
     const pendingRecordings = recordings
@@ -63,6 +66,7 @@ export function initDashboard(data) {
   
   // Render upcoming classes
   const renderUpcomingClasses = (classes) => {
+    console.log('[Dashboard] Rendering upcoming classes. Total classes received:', classes.length);
     upcomingClassesContainer.innerHTML = '';
     
     const upcomingClasses = classes.slice(0, 3);

@@ -3,11 +3,13 @@
  * Handles page navigation and active link states
  */
 export function initNavigation() {
+  console.log('[Navigation] Initializing navigation.');
   const navLinks = document.querySelectorAll('.nav a');
   const pages = document.querySelectorAll('.page');
   
   // Function to show a specific page and update active link
   const showPage = (pageId) => {
+    console.log(`[Navigation] Showing page: ${pageId}`);
     // Hide all pages
     pages.forEach(page => {
       page.classList.remove('active');

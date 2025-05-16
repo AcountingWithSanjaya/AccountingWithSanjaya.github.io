@@ -5,6 +5,7 @@ import { uploadPaper as apiUploadPaper } from '../api/config.js';
  * Handles document uploads and management
  */
 export function initPapers(papersData, coursesData) { // Added coursesData
+  console.log('[Papers] Initializing with papersData:', papersData, 'and coursesData:', coursesData);
   // DOM elements
   const papersGrid = document.getElementById('papers-grid');
   const papersList = document.getElementById('papers-list');
@@ -57,6 +58,7 @@ export function initPapers(papersData, coursesData) { // Added coursesData
   
   // Render papers in both grid and list views
   const renderPapers = (papers) => {
+    console.log('[Papers] Rendering papers. Count:', papers.length);
     // Clear containers
     papersGrid.innerHTML = '';
     papersList.innerHTML = '';
@@ -225,6 +227,7 @@ export function initPapers(papersData, coursesData) { // Added coursesData
   
   // Process selected files
   const handleFiles = (selectedFiles) => {
+    console.log('[Papers] Handling selected files:', selectedFiles);
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i];
       
@@ -237,6 +240,7 @@ export function initPapers(papersData, coursesData) { // Added coursesData
           type: 'assignment', // Default type, user should be able to change this
           course: coursesData && coursesData.length > 0 ? coursesData[0].name : 'General' // Default course
         };
+        console.log('[Papers] Adding file to upload list:', fileEntry);
         filesToUpload.push(fileEntry);
         addFileToUploadListUI(fileEntry);
       }
@@ -246,6 +250,7 @@ export function initPapers(papersData, coursesData) { // Added coursesData
   
   // Add file to the upload list UI and allow metadata editing
   const addFileToUploadListUI = (fileEntry) => {
+    console.log('[Papers] Adding file to UI:', fileEntry.file.name);
     const item = document.createElement('div');
     item.className = 'upload-item-detailed'; // New class for more details
     
@@ -325,6 +330,7 @@ export function initPapers(papersData, coursesData) { // Added coursesData
   
   // Handle file upload
   const handleUpload = async () => {
+    console.log('[Papers] Starting upload process for files:', filesToUpload);
     if (filesToUpload.length === 0) {
       alert("No files selected for upload.");
       return;
@@ -337,6 +343,7 @@ export function initPapers(papersData, coursesData) { // Added coursesData
     let successfulUploads = 0;
 
     for (const fileEntry of filesToUpload) {
+      console.log(`[Papers] Uploading file: ${fileEntry.file.name} with metadata:`, fileEntry);
       const paperData = {
         title: fileEntry.title,
         type: fileEntry.type,
@@ -346,19 +353,21 @@ export function initPapers(papersData, coursesData) { // Added coursesData
       try {
         const result = await apiUploadPaper(paperData, fileEntry.file);
         if (result.paper) {
+          console.log(`[Papers] Successfully uploaded ${fileEntry.file.name}. Backend response:`, result);
           papersData.unshift(result.paper); // Add successfully uploaded paper to the main list
           successfulUploads++;
         } else {
           allSucceeded = false;
-          console.error(`Failed to upload ${fileEntry.file.name}:`, result.message);
+          console.error(`[Papers] Failed to upload ${fileEntry.file.name}:`, result.message);
         }
       } catch (error) {
         allSucceeded = false;
-        console.error(`Error uploading ${fileEntry.file.name}:`, error);
+        console.error(`[Papers] Error uploading ${fileEntry.file.name}:`, error);
         alert(`Error uploading ${fileEntry.file.name}: ${error.message}`);
       }
     }
     
+    console.log('[Papers] Upload process finished.');
     // Clear upload list UI and data
     uploadList.innerHTML = '';
     filesToUpload = [];
@@ -381,6 +390,7 @@ export function initPapers(papersData, coursesData) { // Added coursesData
     const selectedType = docTypeFilter ? docTypeFilter.value : 'all';
     const selectedCourse = docCourseFilter ? docCourseFilter.value : 'all';
     const selectedDate = docDateFilter.value;
+    console.log('[Papers] Applying filters. Type:', selectedType, 'Course:', selectedCourse, 'Date:', selectedDate);
     
     let filteredPapers = [...papersData];
     
@@ -426,6 +436,7 @@ export function initPapers(papersData, coursesData) { // Added coursesData
   // Perform search
   const performSearch = () => {
     const searchTerm = searchInput.value.trim().toLowerCase();
+    console.log('[Papers] Performing search for:', searchTerm);
     
     if (searchTerm === '') {
       renderPapers(papersData);
@@ -442,5 +453,6 @@ export function initPapers(papersData, coursesData) { // Added coursesData
   };
   
   // Initialize the component
+  console.log('[Papers] Component setup complete. Initializing...');
   init();
 }
