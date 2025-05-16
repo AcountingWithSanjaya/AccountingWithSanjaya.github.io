@@ -15,19 +15,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load teacher data
     const teacherData = await loadTeacherData();
     
-    // Set user name in header
-    document.querySelector('.user-name').textContent = 'Teacher';
-    document.querySelector('.avatar').textContent = 'T';
+    // Set user name in header - ideally, backend `loadTeacherData` would return teacher's name
+    const userEmail = localStorage.getItem('userEmail');
+    document.querySelector('.user-name').textContent = userEmail ? userEmail.split('@')[0] : 'Teacher'; // Display part of email or "Teacher"
+    document.querySelector('.avatar').textContent = userEmail ? userEmail.charAt(0).toUpperCase() : 'T';
     
     // Initialize components with data from API
     initNavigation();
-    initDashboard(teacherData);
-    initRecordings(teacherData.recordings);
-    initScheduler(teacherData.classes);
-    initPapers(teacherData.papers);
+    initDashboard(teacherData); // Expects teacherData.stats, .recordings, .classes.upcoming
+    initRecordings(teacherData.recordings, teacherData.courses); // Pass courses for the dropdown in modal
+    initScheduler(teacherData.classes, teacherData.courses); // Pass courses for the dropdown
+    initPapers(teacherData.papers, teacherData.courses); // Pass courses for the dropdown
 
   } catch (error) {
     console.error('Error initializing application:', error);
+    // Display a user-friendly error message on the page
+    loadingOverlay.innerHTML = `<div class="loading-content">
+                                  <p class="loading-text" style="color: red;">Error Initializing Application</p>
+                                  <p class="loading-subtext">${error.message}</p>
+                                  <p class="loading-subtext">Please try logging out and logging back in, or contact support.</p>
+                               </div>`;
+    loadingOverlay.classList.remove('hidden'); // Ensure it's visible
+    return; // Stop further execution if init fails
   } finally {
     // Hide loading overlay
     setTimeout(() => {

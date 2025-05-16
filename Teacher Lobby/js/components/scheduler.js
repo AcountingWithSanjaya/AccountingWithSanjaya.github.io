@@ -1,8 +1,13 @@
 /**
  * Scheduler component
  * Handles the class scheduling functionality
+import { scheduleNewClass } from '../api/config.js';
+
+/**
+ * Scheduler component
+ * Handles the class scheduling functionality
  */
-export function initScheduler(classesData) {
+export function initScheduler(classesData, coursesData) { // Added coursesData
   // DOM elements
   const calendarGrid = document.getElementById('calendar-grid');
   const currentMonthEl = document.getElementById('current-month');
@@ -10,6 +15,7 @@ export function initScheduler(classesData) {
   const nextMonthBtn = document.getElementById('next-month');
   const scheduleForm = document.getElementById('schedule-form');
   const classDateInput = document.getElementById('class-date');
+  const classCourseSelect = document.getElementById('class-course'); // Added course select
   
   const upcomingClassesContainer = document.getElementById('upcoming-classes');
   const pastClassesContainer = document.getElementById('past-classes');
@@ -22,11 +28,24 @@ export function initScheduler(classesData) {
   let currentYear = currentDate.getFullYear();
   let selectedDate = new Date();
   
+  // Populate course dropdown
+  const populateCoursesDropdown = () => {
+    if (!classCourseSelect || !coursesData) return;
+    classCourseSelect.innerHTML = '<option value="">Select a course</option>'; // Reset
+    coursesData.forEach(course => {
+      const option = document.createElement('option');
+      option.value = course.id; // Use course ID as value
+      option.textContent = course.name; // Display course name
+      classCourseSelect.appendChild(option);
+    });
+  };
+
   // Initialize the calendar
   const initCalendar = () => {
+    populateCoursesDropdown(); // Populate courses first
     updateCalendarHeader();
     renderCalendar();
-    renderClasses();
+    renderClasses(); // classesData is passed in initScheduler
   };
   
   // Update the calendar header (month and year)
@@ -320,44 +339,61 @@ export function initScheduler(classesData) {
     e.preventDefault();
     
     // Get form values
-    const title = document.getElementById('class-title').value;
-    const course = document.getElementById('class-course').value;
+    const title = document.getElementById('class-title').value.trim();
+    const courseSelect = document.getElementById('class-course');
+    const courseName = courseSelect.options[courseSelect.selectedIndex].text; // Get the text of the selected option
+    const courseId = courseSelect.value; // Get the ID of the selected option (if you store courses by ID)
     const date = document.getElementById('class-date').value;
-    const time = document.getElementById('class-time').value;
-    const duration = document.getElementById('class-duration').value;
-    const description = document.getElementById('class-description').value;
-    
-    // Calculate end time
-    const startDate = new Date(`2023-01-01T${time}`);
-    startDate.setMinutes(startDate.getMinutes() + parseInt(duration));
-    const endTime = startDate.toTimeString().slice(0, 5);
-    
-    // Create new class object
-    const newClass = {
-      id: `class${Date.now()}`,
-      title,
-      course: document.getElementById('class-course').options[document.getElementById('class-course').selectedIndex].text,
-      date,
-      startTime: time,
-      endTime,
-      duration: parseInt(duration),
-      room: 'Room 101', // Default room
-      studentsEnrolled: 0, // No students enrolled yet
-      description
+    const time = document.getElementById('class-time').value; // HH:MM (24-hour)
+    const duration = parseInt(document.getElementById('class-duration').value, 10);
+    const description = document.getElementById('class-description').value.trim();
+    const room = 'Online'; // Default or make it a form field
+
+    if (!title || !courseId || !date || !time || !duration) {
+        alert('Please fill in all required fields for the class.');
+        return;
+    }
+
+    const classDetails = {
+        title,
+        course: courseName, // Send course name
+        // courseId: courseId, // Optionally send course ID if backend uses it
+        date,
+        startTime: time, // Backend expects startTime
+        duration, // Send integer minutes
+        description,
+        room
+        // Backend will calculate endTime, generate ID, set instructor, etc.
     };
-    
-    // Add to upcoming classes
-    classesData.upcoming.push(newClass);
-    
-    // Re-render calendar and classes
-    renderCalendar();
-    renderClasses();
-    
-    // Reset form
-    scheduleForm.reset();
-    
-    // Show confirmation
-    alert('Class scheduled successfully!');
+
+    scheduleNewClass(classDetails)
+        .then(result => {
+            // Add the newly scheduled class (returned from backend) to the local upcoming classes list
+            if (classesData && classesData.upcoming && result.class) {
+                 // Ensure the backend returns a class object that matches frontend structure or adapt here
+                const newClassFromBackend = {
+                    ...result.class, // Spread the properties from backend
+                    // Frontend might expect duration as number, studentsEnrolled, etc.
+                    // Ensure structure consistency or adapt here. For now, assume backend returns a compatible structure.
+                    // For example, backend returns "duration": "90 mins", scheduler.js might prefer number 90
+                    // For now, let's assume result.class matches the structure needed by createClassCard
+                     duration: parseInt(result.class.duration), // If backend sends "90 mins" string
+                     studentsEnrolled: result.class.studentsEnrolled || 0
+                };
+                classesData.upcoming.push(newClassFromBackend);
+            }
+            
+            // Re-render calendar (to show event dot) and classes list
+            renderCalendar(); // Might need to re-fetch or update classesData if not done above
+            renderClasses(); // This uses the modified classesData.upcoming
+            
+            scheduleForm.reset();
+            alert('Class scheduled successfully!');
+        })
+        .catch(error => {
+            console.error('Failed to schedule class:', error);
+            alert(`Error scheduling class: ${error.message}`);
+        });
   });
   
   // Initialize the component

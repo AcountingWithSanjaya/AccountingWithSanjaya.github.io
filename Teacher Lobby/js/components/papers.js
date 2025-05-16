@@ -1,8 +1,10 @@
+import { uploadPaper as apiUploadPaper } from '../api/config.js';
+
 /**
  * Papers component
  * Handles document uploads and management
  */
-export function initPapers(papersData) {
+export function initPapers(papersData, coursesData) { // Added coursesData
   // DOM elements
   const papersGrid = document.getElementById('papers-grid');
   const papersList = document.getElementById('papers-list');
@@ -21,12 +23,36 @@ export function initPapers(papersData) {
   const searchBtn = document.querySelector('.search-btn');
   
   // Track files to upload
-  let filesToUpload = [];
+  let filesToUpload = []; // This will store { file: FileObject, title: '', type: '', course: '' }
   
   // Initialize the component
   const init = () => {
+    populateFilterDropdowns(papersData, coursesData);
     renderPapers(papersData);
     setupEventListeners();
+  };
+
+  const populateFilterDropdowns = (allPapers, allCourses) => {
+    if (docTypeFilter) {
+        docTypeFilter.innerHTML = '<option value="all">All Types</option>';
+        const types = [...new Set(allPapers.map(p => p.type))].filter(Boolean).sort();
+        types.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+            docTypeFilter.appendChild(option);
+        });
+    }
+    if (docCourseFilter && allCourses) {
+        docCourseFilter.innerHTML = '<option value="all">All Courses</option>';
+        allCourses.forEach(course => {
+            const option = document.createElement('option');
+            option.value = course.name; // Filter by name
+            option.textContent = course.name;
+            docCourseFilter.appendChild(option);
+        });
+    }
+    // Date filter is static or can be populated if needed
   };
   
   // Render papers in both grid and list views
@@ -198,72 +224,91 @@ export function initPapers(papersData) {
   };
   
   // Process selected files
-  const handleFiles = (files) => {
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+  const handleFiles = (selectedFiles) => {
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
       
-      // Check if file is already in the list
-      if (!filesToUpload.some(f => f.name === file.name && f.size === file.size)) {
-        filesToUpload.push(file);
-        addFileToUploadList(file);
+      // Check if file is already in the list (by name and size)
+      if (!filesToUpload.some(f => f.file.name === file.name && f.file.size === file.size)) {
+        // For each file, create an object to store file and its metadata
+        const fileEntry = {
+          file: file,
+          title: file.name.replace(/\.[^/.]+$/, ""), // Default title from filename
+          type: 'assignment', // Default type, user should be able to change this
+          course: coursesData && coursesData.length > 0 ? coursesData[0].name : 'General' // Default course
+        };
+        filesToUpload.push(fileEntry);
+        addFileToUploadListUI(fileEntry);
       }
     }
-    
-    // Enable or disable submit button
     uploadSubmitBtn.disabled = filesToUpload.length === 0;
   };
   
-  // Add file to the upload list UI
-  const addFileToUploadList = (file) => {
+  // Add file to the upload list UI and allow metadata editing
+  const addFileToUploadListUI = (fileEntry) => {
     const item = document.createElement('div');
-    item.className = 'upload-item';
+    item.className = 'upload-item-detailed'; // New class for more details
     
-    // Format file size
+    const file = fileEntry.file;
     const fileSize = formatFileSize(file.size);
-    
-    // Determine icon based on file type
-    let fileIcon = 'fa-file-alt';
-    const fileType = file.type.split('/')[1];
-    
-    if (fileType === 'pdf') {
-      fileIcon = 'fa-file-pdf';
-    } else if (fileType.includes('word') || fileType.includes('doc')) {
-      fileIcon = 'fa-file-word';
-    } else if (fileType.includes('sheet') || fileType.includes('excel')) {
-      fileIcon = 'fa-file-excel';
-    } else if (fileType.includes('presentation') || fileType.includes('powerpoint')) {
-      fileIcon = 'fa-file-powerpoint';
-    }
-    
+    let fileIcon = getFileIcon(file.name);
+
     item.innerHTML = `
-      <div class="upload-item-info">
-        <div class="upload-item-icon">
-          <i class="fas ${fileIcon}"></i>
-        </div>
-        <div class="upload-item-details">
-          <div class="upload-item-name">${file.name}</div>
-          <div class="upload-item-size">${fileSize}</div>
-        </div>
+      <div class="upload-item-main-info">
+        <i class="fas ${fileIcon} upload-file-icon"></i>
+        <span class="upload-file-name">${file.name} (${fileSize})</span>
+        <button type="button" class="upload-item-remove-btn">&times;</button>
       </div>
-      <div class="upload-item-remove" data-name="${file.name}">
-        <i class="fas fa-times"></i>
+      <div class="upload-item-meta-form">
+        <div class="form-group-inline">
+          <label>Title:</label>
+          <input type="text" class="upload-meta-title" value="${fileEntry.title}" placeholder="Document Title">
+        </div>
+        <div class="form-group-inline">
+          <label>Type:</label>
+          <select class="upload-meta-type">
+            <option value="assignment" ${fileEntry.type === 'assignment' ? 'selected' : ''}>Assignment</option>
+            <option value="notes" ${fileEntry.type === 'notes' ? 'selected' : ''}>Notes</option>
+            <option value="past_paper" ${fileEntry.type === 'past_paper' ? 'selected' : ''}>Past Paper</option>
+            <option value="syllabus" ${fileEntry.type === 'syllabus' ? 'selected' : ''}>Syllabus</option>
+            <option value="other" ${fileEntry.type === 'other' ? 'selected' : ''}>Other</option>
+          </select>
+        </div>
+        <div class="form-group-inline">
+          <label>Course:</label>
+          <select class="upload-meta-course">
+            ${coursesData.map(course => `<option value="${course.name}" ${fileEntry.course === course.name ? 'selected' : ''}>${course.name}</option>`).join('')}
+            <option value="General" ${fileEntry.course === 'General' ? 'selected' : ''}>General</option>
+          </select>
+        </div>
       </div>
     `;
     
     uploadList.appendChild(item);
+
+    // Event listeners for metadata changes
+    item.querySelector('.upload-meta-title').addEventListener('change', (e) => fileEntry.title = e.target.value);
+    item.querySelector('.upload-meta-type').addEventListener('change', (e) => fileEntry.type = e.target.value);
+    item.querySelector('.upload-meta-course').addEventListener('change', (e) => fileEntry.course = e.target.value);
     
-    // Add event listener to remove button
-    item.querySelector('.upload-item-remove').addEventListener('click', () => {
-      removeFile(file.name);
+    item.querySelector('.upload-item-remove-btn').addEventListener('click', () => {
+      removeFileFromUploadList(fileEntry.file.name, fileEntry.file.size);
       item.remove();
     });
   };
+
+  const getFileIcon = (fileName) => {
+    const ext = fileName.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return 'fa-file-pdf';
+    if (['doc', 'docx'].includes(ext)) return 'fa-file-word';
+    if (['xls', 'xlsx'].includes(ext)) return 'fa-file-excel';
+    if (['ppt', 'pptx'].includes(ext)) return 'fa-file-powerpoint';
+    return 'fa-file-alt';
+  };
   
   // Remove file from upload list
-  const removeFile = (fileName) => {
-    filesToUpload = filesToUpload.filter(file => file.name !== fileName);
-    
-    // Enable or disable submit button
+  const removeFileFromUploadList = (fileName, fileSize) => {
+    filesToUpload = filesToUpload.filter(entry => !(entry.file.name === fileName && entry.file.size === fileSize));
     uploadSubmitBtn.disabled = filesToUpload.length === 0;
   };
   
@@ -279,48 +324,62 @@ export function initPapers(papersData) {
   };
   
   // Handle file upload
-  const handleUpload = () => {
-    // In a real application, this would send files to a server
-    // For this demo, we'll simulate adding the files to our papers list
-    
-    filesToUpload.forEach(file => {
-      // Generate a random ID
-      const id = 'doc' + Date.now() + Math.floor(Math.random() * 1000);
-      
-      // Extract file extension
-      const fileExtension = file.name.split('.').pop().toLowerCase();
-      
-      // Create new paper object
-      const newPaper = {
-        id,
-        title: file.name.replace('.' + fileExtension, ''),
-        type: 'other', // Default type
-        course: 'Mathematics 101', // Default course
-        uploadDate: new Date().toISOString().split('T')[0],
-        size: formatFileSize(file.size),
-        format: fileExtension
+  const handleUpload = async () => {
+    if (filesToUpload.length === 0) {
+      alert("No files selected for upload.");
+      return;
+    }
+
+    uploadSubmitBtn.disabled = true;
+    uploadSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+    let allSucceeded = true;
+    let successfulUploads = 0;
+
+    for (const fileEntry of filesToUpload) {
+      const paperData = {
+        title: fileEntry.title,
+        type: fileEntry.type,
+        course: fileEntry.course
+        // Backend will generate ID, uploadDate, size, format from file
       };
-      
-      // Add to papers data
-      papersData.unshift(newPaper);
-    });
+      try {
+        const result = await apiUploadPaper(paperData, fileEntry.file);
+        if (result.paper) {
+          papersData.unshift(result.paper); // Add successfully uploaded paper to the main list
+          successfulUploads++;
+        } else {
+          allSucceeded = false;
+          console.error(`Failed to upload ${fileEntry.file.name}:`, result.message);
+        }
+      } catch (error) {
+        allSucceeded = false;
+        console.error(`Error uploading ${fileEntry.file.name}:`, error);
+        alert(`Error uploading ${fileEntry.file.name}: ${error.message}`);
+      }
+    }
     
-    // Clear upload list
+    // Clear upload list UI and data
     uploadList.innerHTML = '';
     filesToUpload = [];
-    uploadSubmitBtn.disabled = true;
+    uploadSubmitBtn.disabled = true; // Keep disabled until new files are added
+    uploadSubmitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Upload Files';
     
-    // Re-render papers
-    renderPapers(papersData);
+    renderPapers(papersData); // Re-render papers list with new additions
     
-    // Show confirmation
-    alert('Files uploaded successfully!');
+    if (allSucceeded) {
+      alert(`${successfulUploads} file(s) uploaded successfully!`);
+    } else if (successfulUploads > 0) {
+      alert(`Partially successful: ${successfulUploads} file(s) uploaded. Some uploads failed. Check console for details.`);
+    } else {
+      alert('All file uploads failed. Please try again or check console for errors.');
+    }
   };
   
   // Apply filters to papers
   const applyFilters = () => {
-    const selectedType = docTypeFilter.value;
-    const selectedCourse = docCourseFilter.value;
+    const selectedType = docTypeFilter ? docTypeFilter.value : 'all';
+    const selectedCourse = docCourseFilter ? docCourseFilter.value : 'all';
     const selectedDate = docDateFilter.value;
     
     let filteredPapers = [...papersData];

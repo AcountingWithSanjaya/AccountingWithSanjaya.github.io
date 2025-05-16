@@ -1,19 +1,26 @@
+import { uploadRecording as apiUploadRecording } from '../api/config.js';
+
 /**
  * Recordings component
  * Handles the display and interaction with class recordings
  */
-export function initRecordings(recordings) {
+export function initRecordings(recordings, coursesData) { // Added coursesData
   // Get DOM elements
-  const recordingsGrid = document.querySelector('.recordings-grid');
-  const courseFilter = document.getElementById('course-filter');
+  const recordingsGrid = document.querySelector('.recordings-grid'); // This is for the main recordings page, not dashboard
+  const dashboardRecordingsGrid = document.querySelector('#dashboard-page .recordings-grid'); // Grid on dashboard
+
+  const courseFilter = document.getElementById('course-filter'); // Main page filter
   const dateFilter = document.getElementById('date-filter');
   const statusFilter = document.getElementById('status-filter');
   const filterButton = document.querySelector('.filters-card .cta-button');
   const uploadModal = document.getElementById('upload-recording-modal');
   const closeModalBtn = document.getElementById('close-upload-modal');
   const uploadForm = document.getElementById('recording-upload-form');
+  const recordingTitleInput = document.getElementById('recording-title');
+  const recordingCourseSelect = document.getElementById('recording-course'); // Select for course in modal
+  const recordingDateInput = document.getElementById('recording-date');
   const fileInput = document.getElementById('recording-file-input');
-  const selectedFile = document.getElementById('selected-recording-file');
+  const selectedFileDisplay = document.getElementById('selected-recording-file'); // Corrected variable name
   const progressContainer = document.getElementById('recording-progress-container');
   const progressBar = document.getElementById('recording-progress-bar');
   const progressText = document.getElementById('recording-progress-text');
@@ -152,10 +159,36 @@ export function initRecordings(recordings) {
       errorMessage.classList.add('hidden');
       
       // Pre-fill form fields with recording data
-      document.getElementById('recording-title').value = recording.title;
-      document.getElementById('recording-course').value = recording.course.toLowerCase().replace(/\s+/g, '');
-      document.getElementById('recording-date').value = recording.date;
+      recordingTitleInput.value = recording.title;
+      recordingDateInput.value = recording.date;
       
+      // Populate and select course in modal
+      if (recordingCourseSelect && coursesData) {
+        recordingCourseSelect.innerHTML = '<option value="">Select a course</option>';
+        let courseFound = false;
+        coursesData.forEach(course => {
+          const option = document.createElement('option');
+          option.value = course.id; // Assuming course.id
+          option.textContent = course.name;
+          if (course.name === recording.course) { // Match by name if that's what recording.course stores
+            option.selected = true;
+            courseFound = true;
+          }
+          recordingCourseSelect.appendChild(option);
+        });
+        // If course wasn't in the list, maybe add it or handle as 'other'
+        if (!courseFound && recording.course) {
+            const option = document.createElement('option');
+            option.value = recording.course; // Or some placeholder value
+            option.textContent = recording.course;
+            option.selected = true;
+            recordingCourseSelect.appendChild(option);
+        }
+      }
+      
+      // Store recording ID in the form or modal for submission
+      uploadForm.dataset.recordingId = recordingId;
+
       // Show the modal
       uploadModal.classList.add('show');
     }

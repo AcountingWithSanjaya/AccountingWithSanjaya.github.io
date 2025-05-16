@@ -1,177 +1,198 @@
-export const API_URL = 'http://127.0.0.1:10209/api';
+export const API_BASE_URL = 'http://127.0.0.1:10209'; // Base URL for the backend
 
-// Mock data for when backend is unavailable
-const mockTeacherData = {
-  stats: {
-    pendingRecordings: 3,
-    upcomingClasses: 2,
-    papersToGrade: 5,
-    totalStudents: 25
-  },
-  recordings: [
-    {
-      id: 'rec1',
-      title: 'Introduction to Accounting',
-      course: 'Accounting 101',
-      date: new Date().toISOString().split('T')[0],
-      duration: '01:30:00',
-      status: 'pending',
-      studentsAttended: 23
-    }
-  ],
-  classes: {
-    upcoming: [
-      {
-        id: 'class1',
-        title: 'Financial Statements',
-        course: 'Accounting 101',
-        date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-        startTime: '10:00',
-        endTime: '11:30',
-        duration: 90,
-        room: 'Room 101',
-        studentsEnrolled: 25,
-        description: 'Learn how to prepare basic financial statements.'
-      }
-    ],
-    past: [
-      {
-        id: 'pastclass1',
-        title: 'Basic Accounting Principles',
-        course: 'Accounting 101',
-        date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-        startTime: '10:00',
-        endTime: '11:30',
-        duration: 90,
-        room: 'Room 101',
-        studentsAttended: 23,
-        description: 'Introduction to fundamental accounting concepts.'
-      }
-    ]
-  },
-  papers: [
-    {
-      id: 'doc1',
-      title: 'Accounting Fundamentals',
-      type: 'syllabus',
-      course: 'Accounting 101',
-      uploadDate: new Date(Date.now() - 432000000).toISOString().split('T')[0],
-      size: '256 KB',
-      format: 'pdf'
-    }
-  ]
-};
+// Mock data is no longer used.
+// const mockTeacherData = { ... };
 
-export const getAuthHeaders = () => {
-  const token = localStorage.getItem('authToken') || 'mock-token';
-  const email = localStorage.getItem('userEmail') || 'ssjayasundara@yahoo.com0';
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-    'X-User-Email': email
+export const getAuthHeaders = (isFormData = false) => {
+  const token = localStorage.getItem('authToken');
+  const email = localStorage.getItem('userEmail');
+  
+  if (!token || !email) {
+    // Handle missing auth details, perhaps redirect to login or show an error
+    console.error("Auth token or email is missing from localStorage.");
+    // throw new Error("Authentication details not found."); // Or handle more gracefully
+  }
+
+  const headers = {};
+  if (!isFormData) { // For JSON, set Content-Type
+    headers['Content-Type'] = 'application/json';
+  }
+  // For FormData, the browser sets Content-Type automatically with boundary.
+  
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  // Email might be sent in body or as a query param depending on GET/POST
+  // Or included if endpoint specifically needs it in header (X-User-Email was an example)
+  // For POST requests, it's better to include email in the JSON body.
+  // For FormData, include it as a form field.
+  return headers;
   };
 };
 
 export const checkTeacherAuth = async () => {
-  try {
-    const email = localStorage.getItem('userEmail') || 'ssjayasundara@yahoo.com0';
-    const token = localStorage.getItem('authToken') || 'mock-token';
+  const email = localStorage.getItem('userEmail');
+  const token = localStorage.getItem('authToken');
 
-    const response = await fetch(`${API_URL}/confirmteacherloggedin`, {
+  if (!email || !token) {
+    console.error('Auth details missing for checkTeacherAuth');
+    // Potentially redirect to login or throw error
+    window.location.href = '../Login and Register/Login.html'; // Example redirect
+    return false; // Or throw new Error("Missing auth details");
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/confirmteacherloggedin`, { // Corrected endpoint
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, token })
+      headers: getAuthHeaders(), // Use the helper for headers
+      body: JSON.stringify({ email, token }) // Send email and token in body
     });
 
-    return response.ok;
-  } catch (error) {
-    console.warn('Backend unavailable, using mock auth');
+    if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Teacher auth check failed:', errorData.message);
+        // If auth fails, redirect to login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userEmail');
+        window.location.href = '../Login and Register/Login.html';
+        return false;
+    }
+    // console.log('Teacher authentication successful.');
     return true;
+  } catch (error) {
+    console.error('Error during teacher auth check:', error);
+    // Potentially redirect or show a generic error message to the user
+    window.location.href = '../Login and Register/Login.html'; // Example redirect
+    return false;
   }
 };
 
 export const loadTeacherData = async () => {
-  try {
-    const email = localStorage.getItem('userEmail') || 'ssjayasundara@yahoo.com0';
-    const token = localStorage.getItem('authToken') || 'mock-token';
+  const email = localStorage.getItem('userEmail');
+  const token = localStorage.getItem('authToken');
 
-    const response = await fetch(`${API_URL}/loadteacher`, {
+  if (!email || !token) {
+    console.error('Auth details missing for loadTeacherData');
+    throw new Error("Auth details not found for loading teacher data.");
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/loadteacher`, { // Corrected endpoint
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ email, token })
     });
 
     if (!response.ok) {
-      throw new Error('Failed to load teacher data');
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to load teacher data');
     }
-
     return await response.json();
   } catch (error) {
-    console.warn('Backend unavailable, using mock data');
-    return mockTeacherData;
+    console.error('Error loading teacher data:', error);
+    // Handle error, e.g., show message to user, or redirect
+    throw error; // Re-throw to be caught by calling function in main.js
   }
 };
 
-export const uploadRecording = async (recordingId, file) => {
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('recordingId', recordingId);
-    formData.append('email', localStorage.getItem('userEmail') || 'ssjayasundara@yahoo.com0');
-    formData.append('token', localStorage.getItem('authToken') || 'mock-token');
 
-    const response = await fetch(`${API_URL}/upload/recording`, {
+export const scheduleNewClass = async (classDetails) => {
+  const email = localStorage.getItem('userEmail');
+  const token = localStorage.getItem('authToken');
+
+  if (!email || !token) {
+    throw new Error("Authentication details not found for scheduling class.");
+  }
+  
+  // Add auth details to the payload for the backend to verify
+  const payload = {
+    ...classDetails,
+    auth_email: email,
+    auth_token: token
+  };
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/teacher/schedule-class`, {
       method: 'POST',
+      headers: getAuthHeaders(), // Content-Type: application/json
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to schedule new class');
+    }
+    return await response.json(); // Should return { message: "...", class: { ... } }
+  } catch (error) {
+    console.error('Error scheduling new class:', error);
+    throw error;
+  }
+};
+
+export const uploadRecording = async (recordingId, file, metadata) => {
+  const email = localStorage.getItem('userEmail');
+  const token = localStorage.getItem('authToken');
+
+  if (!email || !token) {
+    throw new Error("Authentication details not found for uploading recording.");
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('recordingId', recordingId); // ID of the recording being updated/uploaded
+  formData.append('email', email); // Auth email
+  formData.append('token', token); // Auth token
+  
+  // Append other metadata from the form
+  if (metadata.title) formData.append('title', metadata.title);
+  // if (metadata.course_id) formData.append('course_id', metadata.course_id); // if using course ID
+  if (metadata.courseName) formData.append('course', metadata.courseName); // if using course name
+  if (metadata.date) formData.append('date', metadata.date);
+  // Add any other metadata fields like description if needed by backend
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/upload/recording`, { // Corrected endpoint
+      method: 'POST',
+      headers: getAuthHeaders(true), // Pass true for FormData to omit Content-Type
       body: formData
     });
 
     if (!response.ok) {
-      throw new Error('Failed to upload recording');
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to upload recording');
     }
-
-    return response.json();
+    return await response.json(); // Expects { message, driveLink, recording }
   } catch (error) {
-    console.warn('Backend unavailable, simulating upload');
-    return {
-      message: 'Recording uploaded successfully (mock)',
-      driveLink: 'https://drive.google.com/mock-link'
-    };
+    console.error('Error uploading recording:', error);
+    throw error;
   }
 };
 
 export const uploadPaper = async (paperData, file) => {
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('data', JSON.stringify(paperData));
-    formData.append('email', localStorage.getItem('userEmail') || 'ssjayasundara@yahoo.com0');
-    formData.append('token', localStorage.getItem('authToken') || 'mock-token');
+  const email = localStorage.getItem('userEmail');
+  const token = localStorage.getItem('authToken');
 
-    const response = await fetch(`${API_URL}/upload/paper`, {
+  if (!email || !token) {
+    throw new Error("Authentication details not found for uploading paper.");
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('data', JSON.stringify(paperData)); // title, type, course
+  formData.append('email', email); // Auth email
+  formData.append('token', token); // Auth token
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/upload/paper`, { // Corrected endpoint
       method: 'POST',
+      headers: getAuthHeaders(true), // Pass true for FormData
       body: formData
     });
 
     if (!response.ok) {
-      throw new Error('Failed to upload paper');
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to upload paper');
     }
-
-    return response.json();
+    return await response.json(); // Expects { message, paper }
   } catch (error) {
-    console.warn('Backend unavailable, simulating upload');
-    return {
-      message: 'Paper uploaded successfully (mock)',
-      paper: {
-        ...paperData,
-        id: `doc${Date.now()}`,
-        uploadDate: new Date().toISOString().split('T')[0],
-        size: '128 KB',
-        driveLink: 'https://drive.google.com/mock-link'
-      }
-    };
+    console.error('Error uploading paper:', error);
+    throw error;
   }
 };
