@@ -30,13 +30,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('[Main] Initializing navigation...');
     initNavigation(); // This initializes navigation links, including potential logout listeners if added there
     console.log('[Main] Initializing dashboard...');
-    // initDashboard(teacherData); // Expects teacherData.stats, .recordings, .classes.upcoming
+    initDashboard(teacherData); // Expects teacherData.stats, .recordings, .classes.upcoming
     console.log('[Main] Initializing recordings component...');
-    // initRecordings(teacherData.recordings, teacherData.courses); // Pass courses for the dropdown in modal
+    initRecordings(teacherData.recordings, teacherData.courses); // Pass courses for the dropdown in modal
     console.log('[Main] Initializing scheduler component...');
-    // initScheduler(teacherData.classes, teacherData.courses); // Pass courses for the dropdown
+    initScheduler(teacherData.classes, teacherData.courses); // Pass courses for the dropdown
     console.log('[Main] Initializing papers component...');
-    // initPapers(teacherData.papers, teacherData.courses); // Pass courses for the dropdown
+    initPapers(teacherData.papers, teacherData.courses); // Pass courses for the dropdown
 
     // Setup Logout Button for Teacher Panel
     const teacherLogoutBtn = document.getElementById('teacher-logout-btn');
