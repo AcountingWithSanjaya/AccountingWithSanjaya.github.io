@@ -42,14 +42,16 @@ function handleInvalidSession(message = 'Your session is invalid or has expired.
 
     if (!dynamicErrorOverlay) dynamicErrorOverlay = createDynamicErrorOverlay();
     dynamicErrorOverlay.classList.remove('hidden');
-    dynamicErrorOverlay.querySelector('.loading-text').textContent = 'Session Invalid';
-    dynamicErrorOverlay.querySelector('.loading-subtext').textContent = message;
+    dynamicErrorOverlay.querySelector('.loading-text').textContent = 'Authentication Required'; // Updated title
+    dynamicErrorOverlay.querySelector('.loading-subtext').textContent = message; // Message can be customized by caller
     const button = dynamicErrorOverlay.querySelector('button');
-    button.textContent = 'Go to Login';
-    button.onclick = redirectToLogin;
+    button.textContent = 'Dismiss'; // Changed button text
+    button.onclick = () => { // Changed button action
+        if (dynamicErrorOverlay) dynamicErrorOverlay.classList.add('hidden');
+    };
 }
 
-function showGeneralError(title, message, buttonText = 'Go Home', buttonAction = () => { window.location.href = '../Home/index.html'; }) {
+function showGeneralError(title, message, buttonText = 'Dismiss', buttonAction = () => { if (dynamicErrorOverlay) dynamicErrorOverlay.classList.add('hidden'); }) {
     const mainLoadingOverlay = document.getElementById('loading-overlay');
     if (mainLoadingOverlay) mainLoadingOverlay.classList.add('hidden');
     
