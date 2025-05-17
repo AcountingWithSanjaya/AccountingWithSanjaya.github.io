@@ -36,10 +36,8 @@ export const checkTeacherAuth = async () => {
   const token = localStorage.getItem('authToken');
 
   if (!email || !token) {
-    console.error('Auth details missing for checkTeacherAuth');
-    // Potentially redirect to login or throw error
-    window.location.href = '../Login and Register/Login.html'; // Example redirect
-    return false; // Or throw new Error("Missing auth details");
+    console.error('[API Config] Auth details missing from localStorage for checkTeacherAuth.');
+    throw new Error("Authentication details not found in localStorage. Please log in.");
   }
 
   try {
@@ -50,21 +48,23 @@ export const checkTeacherAuth = async () => {
     });
 
     if (!response.ok) {
-        const errorData = await response.json();
-        console.error('[API Config] Teacher auth check failed:', errorData.message);
-        // If auth fails, redirect to login
-        localStorage.removeItem('authToken');
+        const errorData = await response.json().catch(() => ({ message: "Unknown error during auth check." }));
+        console.error('[API Config] Teacher auth check failed server-side:', errorData.message);
+        // If auth fails, throw an error to be handled by main.js
+        localStorage.removeItem('authToken'); // Still good to clear invalid tokens
         localStorage.removeItem('userEmail');
-        window.location.href = '../Login and Register/Login.html';
-        return false;
+        throw new Error(`Authentication failed: ${errorData.message || 'Server validation failed'}. Please log in again.`);
     }
     console.log('[API Config] Teacher authentication successful.');
     return true;
   } catch (error) {
-    console.error('[API Config] Error during teacher auth check:', error);
-    // Potentially redirect or show a generic error message to the user
-    window.location.href = '../Login and Register/Login.html'; // Example redirect
-    return false;
+    // Differentiate network/fetch errors from server-side auth failures thrown above
+    if (error.message.startsWith("Authentication failed:")) {
+        throw error; // Re-throw the specific auth error
+    }
+    // Catch network errors or other unexpected issues during fetch
+    console.error('[API Config] Network or unexpected error during teacher auth check:', error);
+    throw new Error(`Error connecting to server for authentication: ${error.message}. Please check your connection or try again later.`);
   }
 };
 

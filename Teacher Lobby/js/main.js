@@ -3,11 +3,12 @@ import { initRecordings } from './components/recordings.js';
 import { initScheduler } from './components/scheduler.js';
 import { initPapers } from './components/papers.js';
 import { initDashboard } from './components/dashboard.js';
-import { checkTeacherAuth, loadTeacherData } from './api/config.js';
+import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './api/config.js'; // Import API_BASE_URL
 
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('[Main] DOMContentLoaded event fired.');
   const loadingOverlay = document.getElementById('loading-overlay');
+  let initializationErrorOccurred = false; // Flag to track if an error occurred
   
   try {
     console.log('[Main] Checking teacher authentication...');
@@ -80,21 +81,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
   } catch (error) {
+    initializationErrorOccurred = true; // Set the flag
     console.error('[Main] Error initializing application:', error);
-    // Display a user-friendly error message on the page
-    loadingOverlay.innerHTML = `<div class="loading-content">
-                                  <p class="loading-text" style="color: red;">Error Initializing Application</p>
-                                  <p class="loading-subtext">${error.message}</p>
-                                  <p class="loading-subtext">Please try logging out and logging back in, or contact support.</p>
-                               </div>`;
-    loadingOverlay.classList.remove('hidden'); // Ensure it's visible
-    return; // Stop further execution if init fails
+    
+    // Update existing loading overlay text with error message
+    const errorLoadingText = loadingOverlay.querySelector('.loading-text');
+    const errorLoadingSubtext = loadingOverlay.querySelector('.loading-subtext');
+
+    if (errorLoadingText) {
+      errorLoadingText.textContent = "Error Initializing Application";
+      errorLoadingText.style.color = "var(--color-error)"; // Use CSS variable for error color
+    }
+    if (errorLoadingSubtext) {
+      errorLoadingSubtext.textContent = `${error.message} Please try logging in again or contact support.`;
+    }
+    // Ensure the overlay (with the error message) is visible
+    loadingOverlay.classList.remove('hidden'); 
+    // Do not return; let finally handle the overlay based on the flag
   } finally {
-    // Hide loading overlay
-    setTimeout(() => {
-      loadingOverlay.classList.add('hidden');
-      setTimeout(() => loadingOverlay.remove(), 500);
-    }, 300);
+    // Hide loading overlay only if no error occurred
+    if (!initializationErrorOccurred) {
+      setTimeout(() => {
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        // Remove the overlay after it's hidden, to clean up the DOM
+        setTimeout(() => {
+            if (loadingOverlay) loadingOverlay.remove();
+        }, 500);
+      }, 300); // Small delay to ensure content is loaded before hiding
+    }
   }
 });
 
