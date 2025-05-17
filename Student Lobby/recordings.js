@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Authentication error:', error);
         window.location.href = '../Login and Register/Login.html';
+        return; // Stop execution if authentication fails and redirect is initiated
     }
     initApplication();
 });
