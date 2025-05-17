@@ -3,11 +3,14 @@ import './js/downloadManager.js';
 const API_URL = 'http://127.0.0.1:10209';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) loadingOverlay.classList.remove('hidden'); // Show loading overlay
+
     const token = localStorage.getItem('authToken');
     const userEmail = localStorage.getItem('userEmail');
 
     if (!token || !userEmail) {
-        window.location.href = '../Login and Register/Login.html';
+        handleInvalidSession(); // Use helper to clear session and redirect
         return;
     }
 
@@ -24,21 +27,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (!response.ok) {
-            throw new Error('Not authenticated');
+            console.error('Login confirmation failed, status:', response.status);
+            const errorData = await response.json().catch(() => ({ message: 'Authentication check failed.' }));
+            throw new Error(errorData.message || 'Not authenticated');
         }
+        
+        // User is authenticated, proceed to initialize the application
+        initApplication();
 
-        // Removed fetchUserCredits() and fetchClasses() as they are not needed for this page.
-        // The initApplication call below will handle fetching recordings.
     } catch (error) {
-        console.error('Authentication error:', error);
-        window.location.href = '../Login and Register/Login.html';
-        return; // Stop execution if authentication fails and redirect is initiated
+        console.error('Authentication error:', error.message);
+        handleInvalidSession(); // Use helper to clear session and redirect
+        // No return needed here as handleInvalidSession redirects
+    } finally {
+        setTimeout(() => {
+            if (loadingOverlay) loadingOverlay.classList.add('hidden'); // Hide loading overlay
+        }, 300);
     }
-    initApplication();
 });
 
+function redirectToLogin() {
+    window.location.href = '../Login and Register/Login.html';
+}
+
+function handleInvalidSession() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('username'); // Added for consistency
+    localStorage.removeItem('rememberedEmail');
+    localStorage.removeItem('rememberMe');
+    localStorage.removeItem('returncustomer');
+    redirectToLogin();
+}
 
 async function initApplication() {
+  // Ensure recordings list is initialized after successful auth
   await initRecordingsList();
   
   const navLinks = document.querySelectorAll('.nav a');
