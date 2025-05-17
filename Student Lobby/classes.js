@@ -44,13 +44,43 @@ function redirectToLogin() {
     window.location.href = '../Login and Register/Login.html';
 }
 
-function handleInvalidSession() {
+function handleInvalidSession(message = 'Your session is invalid or has expired. Please log in again.') {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('rememberedEmail');
     localStorage.removeItem('rememberMe');
     localStorage.removeItem('returncustomer');
-    redirectToLogin();
+    // Do not redirect immediately. Show an overlay instead.
+
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) {
+        const loadingText = loadingOverlay.querySelector('.loading-text');
+        const loadingSubtext = loadingOverlay.querySelector('.loading-subtext');
+        const spinner = loadingOverlay.querySelector('.spinner');
+
+        if (spinner) spinner.style.display = 'none'; // Hide spinner
+        if (loadingText) loadingText.textContent = 'Authentication Required';
+        
+        let buttonHTML = `<button id="go-to-login-btn" class="cta-button" style="margin-top: 1rem; background-color: var(--error-red); color: var(--white);">Go to Login</button>`;
+        if (loadingSubtext) {
+            loadingSubtext.innerHTML = `${message}<br>${buttonHTML}`;
+            const goToLoginBtn = loadingSubtext.querySelector('#go-to-login-btn');
+            if (goToLoginBtn) {
+                goToLoginBtn.onclick = redirectToLogin;
+            }
+        } else if (loadingText) { // Fallback if subtext element doesn't exist but text element does
+            loadingText.innerHTML += `<br>${message}<br>${buttonHTML}`;
+            const goToLoginBtn = loadingText.querySelector('#go-to-login-btn');
+            if (goToLoginBtn) {
+                goToLoginBtn.onclick = redirectToLogin;
+            }
+        }
+        loadingOverlay.classList.remove('hidden'); // Ensure it's visible
+    } else {
+        // Fallback if overlay isn't found (should not happen in normal flow)
+        alert(message + " Please click OK to go to the login page.");
+        redirectToLogin();
+    }
 }
 
 async function fetchUserCredits() {

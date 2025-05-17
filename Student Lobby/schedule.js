@@ -125,13 +125,46 @@ function displaySchedule(scheduleItems) {
     classListContainer.innerHTML = scheduleHTML;
 }
 
-function handleInvalidSession() {
+function handleInvalidSession(message = 'Your session is invalid or has expired. Please log in again.') {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('rememberedEmail');
     localStorage.removeItem('rememberMe');
     localStorage.removeItem('returncustomer');
-    redirectToLogin();
+    // Do not redirect immediately. Show an overlay instead.
+
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) {
+        const loadingText = loadingOverlay.querySelector('.loading-text');
+        const loadingSubtext = loadingOverlay.querySelector('.loading-subtext');
+        const spinner = loadingOverlay.querySelector('.spinner');
+
+        if (spinner) spinner.style.display = 'none'; 
+        if (loadingText) loadingText.textContent = 'Authentication Required';
+        
+        let buttonHTML = `<button id="go-to-login-btn" class="cta-button" style="margin-top: 1rem; background-color: var(--error-red); color: var(--white);">Go to Login</button>`;
+        // The schedule.css might not have .cta-button, so ensure the button is styled or use a generic one.
+        // For consistency, if .cta-button is available in schedule.css (it seems to be from error-message usage), this is fine.
+        // If not, a more generic button style or inline styles would be needed for the button.
+        // The existing schedule.html's overlay is identical to others, so .loading-text etc exist.
+        if (loadingSubtext) {
+            loadingSubtext.innerHTML = `${message}<br>${buttonHTML}`;
+            const goToLoginBtn = loadingSubtext.querySelector('#go-to-login-btn');
+            if (goToLoginBtn) {
+                goToLoginBtn.onclick = redirectToLogin;
+            }
+        } else if (loadingText) { 
+            loadingText.innerHTML += `<br>${message}<br>${buttonHTML}`;
+            const goToLoginBtn = loadingText.querySelector('#go-to-login-btn');
+            if (goToLoginBtn) {
+                goToLoginBtn.onclick = redirectToLogin;
+            }
+        }
+        loadingOverlay.classList.remove('hidden'); 
+    } else {
+        alert(message + " Please click OK to go to the login page.");
+        redirectToLogin();
+    }
 }
 
 function redirectToLogin() {
