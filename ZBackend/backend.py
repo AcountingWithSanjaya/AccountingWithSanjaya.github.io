@@ -1417,7 +1417,8 @@ def upload_paper():
     email = request.form.get('email')
     token = request.form.get('token')
     
-    is_teacher = (email == 'ssjayasundara@yahoo.com0')
+    # Ensure this email is correct and does not have typos like a trailing '0'.
+    is_teacher = (email in TEACHER_EMAILS)
     if not is_teacher or not verify_token(email, token):
         return jsonify({"message": "Unauthorized"}), 401
     
