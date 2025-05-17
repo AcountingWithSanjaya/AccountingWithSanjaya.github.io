@@ -6,8 +6,8 @@ const recordingsContainer = document.getElementById('recordings-container');
 const loadingSpinner = document.getElementById('loading-spinner');
 const noResultsElement = document.getElementById('no-recordings');
 const errorMessageElement = document.getElementById('error-message');
-const subjectFilter = document.getElementById('subject-filter');
-const dateFilter = document.getElementById('date-filter');
+const yearFilter = document.getElementById('year-filter'); // Changed from subjectFilter
+const gradeFilter = document.getElementById('grade-filter'); // Changed from dateFilter
 const applyFiltersButton = document.getElementById('apply-filters');
 
 /**
@@ -49,32 +49,39 @@ export async function initRecordingsList() {
  * @param {Array} recordings
  */
 function populateFilters(recordings) {
-  const subjects = [...new Set(recordings.map(recording => recording.subject))].sort();
-  const dates = [...new Set(recordings.map(recording => recording.date))].sort((a, b) => new Date(b) - new Date(a));
-  
-  subjects.forEach(subject => {
-    const option = document.createElement('option');
-    option.value = subject;
-    option.textContent = subject;
-    subjectFilter.appendChild(option);
+  // Populate Year Filter
+  const years = [...new Set(recordings.map(recording => recording.year))].sort((a, b) => b - a); // Sort descending
+  yearFilter.innerHTML = '<option value="all">All Years</option>'; // Clear existing and add default
+  years.forEach(year => {
+    if (year) { // Ensure year is not null or undefined
+      const option = document.createElement('option');
+      option.value = year;
+      option.textContent = year;
+      yearFilter.appendChild(option);
+    }
   });
-  
-  dates.forEach(date => {
-    const option = document.createElement('option');
-    option.value = date;
-    option.textContent = new Date(date).toLocaleDateString();
-    dateFilter.appendChild(option);
+
+  // Populate Grade Filter
+  const grades = [...new Set(recordings.map(recording => recording.grade))].sort();
+  gradeFilter.innerHTML = '<option value="all">All Grades</option>'; // Clear existing and add default
+  grades.forEach(grade => {
+    if (grade) { // Ensure grade is not null or undefined
+      const option = document.createElement('option');
+      option.value = grade;
+      option.textContent = grade;
+      gradeFilter.appendChild(option);
+    }
   });
 }
 
 function handleFilterApply() {
-  const selectedSubject = subjectFilter.value;
-  const selectedDate = dateFilter.value;
+  const selectedYear = yearFilter.value;
+  const selectedGrade = gradeFilter.value;
   
   filteredRecordings = allRecordings.filter(recording => {
-    const subjectMatch = selectedSubject === 'all' || recording.subject === selectedSubject;
-    const dateMatch = selectedDate === 'all' || recording.date === selectedDate;
-    return subjectMatch && dateMatch;
+    const yearMatch = selectedYear === 'all' || recording.year == selectedYear; // Compare as string or number
+    const gradeMatch = selectedGrade === 'all' || recording.grade === selectedGrade;
+    return yearMatch && gradeMatch;
   });
   
   renderRecordings(filteredRecordings);

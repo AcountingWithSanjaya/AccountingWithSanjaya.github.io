@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             throw new Error('Not authenticated');
         }
 
-        await Promise.all([fetchUserCredits(), fetchClasses()]);
+        // Removed fetchUserCredits() and fetchClasses() as they are not needed for this page.
+        // The initApplication call below will handle fetching recordings.
     } catch (error) {
         console.error('Authentication error:', error);
         window.location.href = '../Login and Register/Login.html';
