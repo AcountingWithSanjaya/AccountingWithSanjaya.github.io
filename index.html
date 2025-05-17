@@ -5,9 +5,7 @@
     <meta http-equiv="refresh" content="0; url=Home/index.html">
     <title>Redirecting...</title>
     <link rel="icon" type="image/png" href="/Images/logo.png"> 
-    <script type="text/javascript">
-        window.location.href = "Home/index.html";
-    </script>
+    <!-- Eruda (debug console for mobile browsers, localhost only) -->
     <script>
         (function () {
             if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -19,6 +17,9 @@
                 }
             }
         })();
+    </script>
+    <script type="text/javascript">
+        window.location.href = "Home/index.html";
     </script>
 </head>
 <body>
