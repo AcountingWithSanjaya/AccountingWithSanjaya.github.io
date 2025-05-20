@@ -1,4 +1,4 @@
-import { uploadRecording as apiUploadRecording } from '../api/config.js';
+import { uploadRecording as apiUploadRecording } from './api/config.js';
 
 /**
  * Recordings component

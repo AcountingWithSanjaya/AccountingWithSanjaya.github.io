@@ -1,7 +1,7 @@
 /**
  * Scheduler component
  * Handles the class scheduling functionality
-import { scheduleNewClass } from '../api/config.js';
+import { scheduleNewClass } from './api/config.js';
 
 /**
  * Scheduler component

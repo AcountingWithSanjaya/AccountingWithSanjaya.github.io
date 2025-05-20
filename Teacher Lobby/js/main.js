@@ -6,7 +6,7 @@ import { initRecordings } from './components/recordings.js';
 import { initScheduler } from './components/scheduler.js';
 import { initPapers } from './components/papers.js';
 import { initDashboard } from './components/dashboard.js';
-import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './api/config.js'; // Import API_BASE_URL
+import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './components/api/config.js'; // Import API_BASE_URL
 
 // Log after all imports are processed (check native browser console)
 console.log('[Main] All modules imported successfully.');

@@ -1,4 +1,4 @@
-import { uploadPaper as apiUploadPaper } from '../api/config.js';
+import { uploadPaper as apiUploadPaper } from './api/config.js';
 
 /**
  * Papers component
