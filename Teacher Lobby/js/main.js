@@ -8,14 +8,17 @@ import { initPapers } from './components/papers.js';
 import { initDashboard } from './components/dashboard.js';
 import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './api/config.js'; // Import API_BASE_URL
 
+// Log after all imports are processed (check native browser console)
+console.log('[Main] All modules imported successfully.');
+
 (async () => {
   // Log inside IIFE before setTimeout (check native browser console)
   console.log('[Main] IIFE entered, scheduling main logic.');
 
   // Wrap in setTimeout to delay execution slightly, allowing Eruda to initialize
   setTimeout(async () => {
-    // Very first log inside setTimeout callback
-    console.log('[Main] setTimeout callback executing. Attempting initialization.');
+    // Very first log inside setTimeout callback - increased delay for testing
+    console.log('[Main] setTimeout callback (100ms delay) executing. Attempting initialization.');
     const loadingOverlay = document.getElementById('loading-overlay');
     let initializationErrorOccurred = false; // Flag to track if an error occurred
     
@@ -136,7 +139,7 @@ import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './api/config.js
       }, 300); // Small delay to ensure content is loaded before hiding
       }
     }
-  }, 0); // 0ms timeout pushes execution to after current call stack
+  }, 100); // Increased to 100ms timeout pushes execution to after current call stack (for testing)
 })();
 
 function clearTeacherLocalStorageAndRedirect() {
