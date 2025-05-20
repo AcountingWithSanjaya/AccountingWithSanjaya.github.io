@@ -6,12 +6,14 @@ import { initDashboard } from './components/dashboard.js';
 import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './api/config.js'; // Import API_BASE_URL
 
 (async () => {
-  console.log('[Main] Script loaded, starting initialization.');
-  const loadingOverlay = document.getElementById('loading-overlay');
-  let initializationErrorOccurred = false; // Flag to track if an error occurred
-  
-  try {
-    console.log('[Main] Checking teacher authentication...');
+  // Wrap in setTimeout to delay execution slightly, allowing Eruda to initialize
+  setTimeout(async () => {
+    console.log('[Main] Script loaded, starting initialization (after small delay).');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    let initializationErrorOccurred = false; // Flag to track if an error occurred
+    
+    try {
+      console.log('[Main] Checking teacher authentication...');
     // Check if user is authenticated teacher
     await checkTeacherAuth();
     console.log('[Main] Teacher authentication successful.');
@@ -122,8 +124,9 @@ import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './api/config.js
             if (loadingOverlay) loadingOverlay.remove();
         }, 500);
       }, 300); // Small delay to ensure content is loaded before hiding
+      }
     }
-  }
+  }, 0); // 0ms timeout pushes execution to after current call stack
 })();
 
 function clearTeacherLocalStorageAndRedirect() {
