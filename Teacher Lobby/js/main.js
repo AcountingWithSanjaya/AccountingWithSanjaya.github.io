@@ -1,3 +1,6 @@
+// Top-level log to confirm file execution (check native browser console)
+console.log('[Main] main.js file parsing started.');
+
 import { initNavigation } from './components/navigation.js';
 import { initRecordings } from './components/recordings.js';
 import { initScheduler } from './components/scheduler.js';
@@ -6,14 +9,19 @@ import { initDashboard } from './components/dashboard.js';
 import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './api/config.js'; // Import API_BASE_URL
 
 (async () => {
+  // Log inside IIFE before setTimeout (check native browser console)
+  console.log('[Main] IIFE entered, scheduling main logic.');
+
   // Wrap in setTimeout to delay execution slightly, allowing Eruda to initialize
   setTimeout(async () => {
-    console.log('[Main] Script loaded, starting initialization (after small delay).');
+    // Very first log inside setTimeout callback
+    console.log('[Main] setTimeout callback executing. Attempting initialization.');
     const loadingOverlay = document.getElementById('loading-overlay');
     let initializationErrorOccurred = false; // Flag to track if an error occurred
     
     try {
-      console.log('[Main] Checking teacher authentication...');
+      // This log should now be the one to look for in Eruda after the "[Main] setTimeout callback..."
+      console.log('[Main] Inside setTimeout try block, checking teacher authentication...');
     // Check if user is authenticated teacher
     await checkTeacherAuth();
     console.log('[Main] Teacher authentication successful.');
@@ -121,7 +129,9 @@ import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './api/config.js
         if (loadingOverlay) loadingOverlay.classList.add('hidden');
         // Remove the overlay after it's hidden, to clean up the DOM
         setTimeout(() => {
-            if (loadingOverlay) loadingOverlay.remove();
+            if (loadingOverlay && loadingOverlay.parentNode) { // Check if it's still in DOM
+                loadingOverlay.remove();
+            }
         }, 500);
       }, 300); // Small delay to ensure content is loaded before hiding
       }
