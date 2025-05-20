@@ -83,8 +83,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (error) {
     initializationErrorOccurred = true; // Set the flag
     console.error('[Main] Error initializing application:', error);
+
+    // Check if the error is an authentication error that requires redirection
+    if (error.message.includes("Authentication failed") || 
+        error.message.includes("Authentication details not found") ||
+        error.message.includes("Invalid or expired token") ||
+        error.message.includes("User is not authorized as a teacher")) {
+      console.warn('[Main] Authentication error detected, redirecting to login:', error.message);
+      clearTeacherLocalStorageAndRedirect(); // This function handles redirection
+      // No need to show error on overlay if redirecting immediately
+      return; // Exit early as we are redirecting
+    }
     
-    // Update existing loading overlay text with error message
+    // For other errors, update existing loading overlay text with error message
     const errorLoadingText = loadingOverlay.querySelector('.loading-text');
     const errorLoadingSubtext = loadingOverlay.querySelector('.loading-subtext');
 
@@ -93,13 +104,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       errorLoadingText.style.color = "var(--color-error)"; // Use CSS variable for error color
     }
     if (errorLoadingSubtext) {
-      errorLoadingSubtext.textContent = `${error.message} Please try logging in again or contact support.`;
+      errorLoadingSubtext.textContent = `${error.message} Please try again or contact support.`;
     }
     // Ensure the overlay (with the error message) is visible
-    loadingOverlay.classList.remove('hidden'); 
+    if (loadingOverlay) loadingOverlay.classList.remove('hidden'); 
     // Do not return; let finally handle the overlay based on the flag
   } finally {
-    // Hide loading overlay only if no error occurred
+    // Hide loading overlay only if no error occurred AND we are not redirecting
+    // If an auth error occurred and we returned early, this part might not be strictly necessary
+    // for the overlay, but it's good for cleanup if other non-redirecting errors happen.
     if (!initializationErrorOccurred) {
       setTimeout(() => {
         if (loadingOverlay) loadingOverlay.classList.add('hidden');
