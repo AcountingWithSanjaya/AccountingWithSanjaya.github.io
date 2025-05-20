@@ -13,23 +13,43 @@ export function initDashboard(data) {
   
   // Update dashboard statistics
   const updateDashboardStats = (stats) => {
-    console.log('[Dashboard] Updating stats:', stats);
-    document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = stats.pendingRecordings;
-    document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = stats.upcomingClasses;
-    document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = stats.papersToGrade;
-    document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = stats.totalStudents;
+    console.log('[Dashboard] Updating dashboard stats with data:', stats);
+    if (!stats) {
+      console.warn('[Dashboard] Stats data is undefined or null. Cannot update stats.');
+      document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = 'N/A';
+      document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = 'N/A';
+      document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = 'N/A';
+      document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = 'N/A';
+      return;
+    }
+    document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = stats.pendingRecordings !== undefined ? stats.pendingRecordings : 'N/A';
+    document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = stats.upcomingClasses !== undefined ? stats.upcomingClasses : 'N/A';
+    document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = stats.papersToGrade !== undefined ? stats.papersToGrade : 'N/A';
+    document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = stats.totalStudents !== undefined ? stats.totalStudents : 'N/A';
+    console.log('[Dashboard] Dashboard stats UI updated.');
   };
   
   // Render recordings section
   const renderDashboardRecordings = (recordings) => {
-    console.log('[Dashboard] Rendering dashboard recordings. Total recordings received:', recordings.length);
+    console.log('[Dashboard] Attempting to render dashboard recordings. Total recordings received:', recordings ? recordings.length : 'N/A');
+    if (!dashboardRecordingsGrid) {
+        console.error('[Dashboard] dashboardRecordingsGrid element not found.');
+        return;
+    }
     dashboardRecordingsGrid.innerHTML = '';
+
+    if (!recordings || !Array.isArray(recordings)) {
+        console.warn('[Dashboard] Recordings data is invalid or not an array. Displaying no recordings message.');
+        dashboardRecordingsGrid.innerHTML = `<div class="no-recordings"><p>No recordings data available.</p></div>`;
+        return;
+    }
     
     const pendingRecordings = recordings
       .filter(recording => recording.status === 'pending')
       .slice(0, 3);
     
     if (pendingRecordings.length === 0) {
+      console.log('[Dashboard] No pending recordings to display on dashboard.');
       dashboardRecordingsGrid.innerHTML = `
         <div class="no-recordings">
           <p>No pending recordings.</p>
@@ -38,9 +58,10 @@ export function initDashboard(data) {
       return;
     }
     
+    console.log(`[Dashboard] Rendering ${pendingRecordings.length} pending recording(s) on dashboard.`);
     pendingRecordings.forEach(recording => {
       const formattedDate = new Date(recording.date).toLocaleDateString();
-      
+      console.log(`[Dashboard] Creating card for recording: ${recording.title}, Date: ${formattedDate}`);
       const card = document.createElement('div');
       card.className = 'recording-card';
       card.innerHTML = `
@@ -66,12 +87,23 @@ export function initDashboard(data) {
   
   // Render upcoming classes
   const renderUpcomingClasses = (classes) => {
-    console.log('[Dashboard] Rendering upcoming classes. Total classes received:', classes.length);
+    console.log('[Dashboard] Attempting to render upcoming classes. Total classes received:', classes ? classes.length : 'N/A');
+    if (!upcomingClassesContainer) {
+        console.error('[Dashboard] upcomingClassesContainer element not found.');
+        return;
+    }
     upcomingClassesContainer.innerHTML = '';
+
+    if (!classes || !Array.isArray(classes)) {
+        console.warn('[Dashboard] Upcoming classes data is invalid or not an array. Displaying no classes message.');
+        upcomingClassesContainer.innerHTML = `<div class="no-classes"><p>No upcoming classes data available.</p></div>`;
+        return;
+    }
     
-    const upcomingClasses = classes.slice(0, 3);
+    const upcomingClasses = classes.slice(0, 3); // Show top 3
     
     if (upcomingClasses.length === 0) {
+      console.log('[Dashboard] No upcoming classes to display on dashboard.');
       upcomingClassesContainer.innerHTML = `
         <div class="no-classes">
           <p>No upcoming classes scheduled.</p>
@@ -80,8 +112,10 @@ export function initDashboard(data) {
       return;
     }
     
+    console.log(`[Dashboard] Rendering ${upcomingClasses.length} upcoming class(es) on dashboard.`);
     upcomingClasses.forEach(cls => {
       const classDate = new Date(cls.date);
+      console.log(`[Dashboard] Creating card for class: ${cls.title}, Date: ${classDate.toLocaleDateString()}`);
       const card = document.createElement('div');
       card.className = 'upcoming-class-card';
       card.innerHTML = `

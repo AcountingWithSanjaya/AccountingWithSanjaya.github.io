@@ -9,7 +9,7 @@ export function initNavigation() {
   
   // Function to show a specific page and update active link
   const showPage = (pageId) => {
-    console.log(`[Navigation] Showing page: ${pageId}`);
+    console.log(`[Navigation] Attempting to show page: ${pageId}`);
     // Hide all pages
     pages.forEach(page => {
       page.classList.remove('active');
@@ -30,10 +30,14 @@ export function initNavigation() {
     const activeLink = document.querySelector(`.nav a[data-page="${pageId}"]`);
     if (activeLink) {
       activeLink.classList.add('active');
+      console.log(`[Navigation] Active link set for page: ${pageId}`);
+    } else {
+      console.warn(`[Navigation] No active link found for page: ${pageId}`);
     }
     
     // Update URL hash
     window.location.hash = pageId;
+    console.log(`[Navigation] URL hash updated to: #${pageId}`);
   };
   
   // Handle navigation click events
@@ -41,6 +45,7 @@ export function initNavigation() {
     link.addEventListener('click', (e) => {
       e.preventDefault();
       const pageId = link.getAttribute('data-page');
+      console.log(`[Navigation] Link clicked for page: ${pageId}`);
       showPage(pageId);
     });
   });

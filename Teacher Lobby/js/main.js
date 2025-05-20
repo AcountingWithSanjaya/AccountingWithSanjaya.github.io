@@ -79,6 +79,7 @@ import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './api/config.js
         }
       });
     }
+    console.log('[Main] All components initialized successfully.');
 
   } catch (error) {
     initializationErrorOccurred = true; // Set the flag
