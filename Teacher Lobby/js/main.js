@@ -5,8 +5,8 @@ import { initPapers } from './components/papers.js';
 import { initDashboard } from './components/dashboard.js';
 import { checkTeacherAuth, loadTeacherData, API_BASE_URL } from './api/config.js'; // Import API_BASE_URL
 
-document.addEventListener('DOMContentLoaded', async () => {
-  console.log('[Main] DOMContentLoaded event fired.');
+(async () => {
+  console.log('[Main] Script loaded, starting initialization.');
   const loadingOverlay = document.getElementById('loading-overlay');
   let initializationErrorOccurred = false; // Flag to track if an error occurred
   
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }, 300); // Small delay to ensure content is loaded before hiding
     }
   }
-});
+})();
 
 function clearTeacherLocalStorageAndRedirect() {
   localStorage.removeItem('authToken');
