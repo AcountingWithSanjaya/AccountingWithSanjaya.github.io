@@ -1578,10 +1578,11 @@ if __name__ == '__main__':
         # Initialize with some default courses if none exist
         default_courses = {
             "courses": [
-                {"id": "course1", "name": "Mathematics 101"},
-                {"id": "course2", "name": "Physics 201"},
-                {"id": "course3", "name": "Accounting Basics"},
-                {"id": "course4", "name": "Advanced Business Studies"}
+                {"id": "course1", "name": "Mathematics 101", "type": "Core Subject"},
+                {"id": "course2", "name": "Physics 201", "type": "Core Subject"},
+                {"id": "course3", "name": "Accounting Basics", "type": "Vocational"},
+                {"id": "course4", "name": "Advanced Business Studies", "type": "Vocational"},
+                {"id": "course5", "name": "Creative Writing Workshop", "type": "Elective"}
             ]
         }
         save_json(COURSES_FILE, default_courses)
