@@ -1251,21 +1251,21 @@ def upload_to_drive(file_data, filename, mime_type):
 def confirm_teacher_logged_in():
     # This route confirms if the provided token for the email is valid AND the user is a teacher.
     data = request.json
-    email = data.get('email')
+    original_email = data.get('email')
     token = data.get('token')
     
-    if not email or not token:
+    if not original_email or not token:
         return jsonify({"message": "Missing credentials"}), 400
         
     # For a real system, check against a list of teacher emails or a role.
-    # Using the hardcoded email for now as it was the previous check.
-    # Ensure this email is correct and does not have typos like a trailing '0'.
-    is_teacher = (email in TEACHER_EMAILS)
+    # Ensure TEACHER_EMAILS contains lowercase emails.
+    is_teacher = (original_email.lower() in TEACHER_EMAILS)
 
     if not is_teacher:
          return jsonify({"message": "User is not authorized as a teacher"}), 403
 
-    if not verify_token(email, token): # verify_token handles session validity
+    # Use original_email for token verification as session keys might be case-sensitive
+    if not verify_token(original_email, token): # verify_token handles session validity
         return jsonify({"message": "Invalid or expired token"}), 401
         
     return jsonify({"message": "Teacher authorized"}), 200
@@ -1273,16 +1273,20 @@ def confirm_teacher_logged_in():
 @app.route('/loadteacher', methods=['POST'])
 def load_teacher():
     data = request.json
-    email = data.get('email')
+    original_email = data.get('email')
     token = data.get('token')
+
+    if not original_email or not token: # Added check for missing email/token
+        return jsonify({"message": "Missing credentials for loading teacher data"}), 400
     
-    # Ensure this email is correct and does not have typos like a trailing '0'.
-    is_teacher = (email in TEACHER_EMAILS)  # Replace with actual teacher check logic
+    # Ensure TEACHER_EMAILS contains lowercase emails.
+    is_teacher = (original_email.lower() in TEACHER_EMAILS)
 
     if not is_teacher:
         return jsonify({"message": "User is not authorized as a teacher"}), 403
         
-    if not verify_token(email, token): # verify_token handles session validity
+    # Use original_email for token verification
+    if not verify_token(original_email, token): # verify_token handles session validity
         return jsonify({"message": "Invalid or expired token"}), 401
     
     classes_data_full = load_json(CLASSES_FILE) # Expected: {"classes": [...]}
@@ -1349,12 +1353,16 @@ def load_teacher():
 
 @app.route('/upload/recording', methods=['POST'])
 def upload_recording():
-    email = request.form.get('email')
+    original_email = request.form.get('email')
     token = request.form.get('token')
+
+    if not original_email or not token: # Added check for missing email/token
+        return jsonify({"message": "Missing credentials for uploading recording"}), 400
     
-    # Ensure this email is correct and does not have typos like a trailing '0'.
-    is_teacher = (email in TEACHER_EMAILS)
-    if not is_teacher or not verify_token(email, token):
+    # Ensure TEACHER_EMAILS contains lowercase emails.
+    is_teacher = (original_email.lower() in TEACHER_EMAILS)
+    # Use original_email for token verification
+    if not is_teacher or not verify_token(original_email, token):
         return jsonify({"message": "Unauthorized"}), 401
     
     if 'file' not in request.files:
@@ -1414,12 +1422,16 @@ def upload_recording():
 
 @app.route('/upload/paper', methods=['POST'])
 def upload_paper():
-    email = request.form.get('email')
+    original_email = request.form.get('email')
     token = request.form.get('token')
+
+    if not original_email or not token: # Added check for missing email/token
+        return jsonify({"message": "Missing credentials for uploading paper"}), 400
     
-    # Ensure this email is correct and does not have typos like a trailing '0'.
-    is_teacher = (email in TEACHER_EMAILS)
-    if not is_teacher or not verify_token(email, token):
+    # Ensure TEACHER_EMAILS contains lowercase emails.
+    is_teacher = (original_email.lower() in TEACHER_EMAILS)
+    # Use original_email for token verification
+    if not is_teacher or not verify_token(original_email, token):
         return jsonify({"message": "Unauthorized"}), 401
     
     if 'file' not in request.files:
@@ -1483,12 +1495,16 @@ def upload_paper():
 def teacher_schedule_class():
     form_data = request.json 
     
-    auth_email = form_data.get('auth_email') 
+    original_auth_email = form_data.get('auth_email')
     auth_token = form_data.get('auth_token')
 
-    # Ensure this email is correct and does not have typos like a trailing '0'.
-    is_teacher = (auth_email in TEACHER_EMAILS)
-    if not is_teacher or not verify_token(auth_email, auth_token):
+    if not original_auth_email or not auth_token: # Added check for missing email/token
+        return jsonify({"message": "Missing credentials for scheduling class"}), 400
+
+    # Ensure TEACHER_EMAILS contains lowercase emails.
+    is_teacher = (original_auth_email.lower() in TEACHER_EMAILS)
+    # Use original_auth_email for token verification
+    if not is_teacher or not verify_token(original_auth_email, auth_token):
         return jsonify({"message": "Unauthorized to schedule class"}), 401
 
     try:
