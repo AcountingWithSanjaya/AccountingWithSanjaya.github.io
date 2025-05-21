@@ -18,7 +18,7 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
   const scheduleForm = document.getElementById('schedule-form');
   const classDateInput = document.getElementById('class-date');
   const classCourseSelect = document.getElementById('class-course');
-  const classLessonTypeSelect = document.getElementById('class-lesson-type'); // Added lesson type select
+  // const classLessonTypeSelect = document.getElementById('class-lesson-type'); // Removed
   
   const upcomingClassesContainer = document.getElementById('upcoming-classes');
   const pastClassesContainer = document.getElementById('past-classes');
@@ -43,27 +43,11 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
     });
   };
 
-  // Populate lesson type dropdown
-  const populateLessonTypesDropdown = () => {
-    if (!classLessonTypeSelect || !lessonTypesData) {
-        console.warn('[Scheduler] Lesson type select or data not available for populating.');
-        if (classLessonTypeSelect) classLessonTypeSelect.innerHTML = '<option value="">No lesson types loaded</option>';
-        return;
-    }
-    classLessonTypeSelect.innerHTML = '<option value="">Select a lesson type</option>'; // Reset
-    lessonTypesData.forEach(type => {
-      const option = document.createElement('option');
-      option.value = type.id; // Use lesson type ID as value (e.g., "lecture")
-      option.textContent = type.name; // Display lesson type name (e.g., "Lecture")
-      classLessonTypeSelect.appendChild(option);
-    });
-  };
-
   // Initialize the calendar
   const initCalendar = () => {
     console.log('[Scheduler] initCalendar called.');
     populateCoursesDropdown(); 
-    populateLessonTypesDropdown(); // Populate lesson types
+    // populateLessonTypesDropdown(); // Removed
     updateCalendarHeader();
     renderCalendar();
     renderClasses(); // classesData is passed in initScheduler
@@ -309,10 +293,6 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
           <span>${cls.course}</span>
         </div>
         <div class="class-detail">
-          <i class="fas fa-chalkboard-teacher"></i> <!-- Example icon for lesson type -->
-          <span>${cls.lessonType || 'N/A'}</span>
-        </div>
-        <div class="class-detail">
           <i class="fas fa-map-marker-alt"></i>
           <span>${cls.room}</span>
         </div>
@@ -376,15 +356,15 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
     const courseSelect = document.getElementById('class-course');
     const courseName = courseSelect.options[courseSelect.selectedIndex].text; // Get the text of the selected option
     const courseId = courseSelect.value; // Get the ID of the selected option (if you store courses by ID)
-    const lessonType = document.getElementById('class-lesson-type').value;
+    // const lessonType = document.getElementById('class-lesson-type').value; // Removed
     const date = document.getElementById('class-date').value;
     const time = document.getElementById('class-time').value; // HH:MM (24-hour)
     const duration = parseInt(document.getElementById('class-duration').value, 10);
     const description = document.getElementById('class-description').value.trim();
     const room = 'Online'; // Default or make it a form field
 
-    if (!title || !courseId || !lessonType || !date || !time || !duration) {
-        alert('Please fill in all required fields for the class, including lesson type.');
+    if (!title || !courseId || !date || !time || !duration) {
+        alert('Please fill in all required fields for the class.');
         return;
     }
 
@@ -392,7 +372,7 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
         title,
         course: courseName, // Send course name
         // courseId: courseId, // Optionally send course ID if backend uses it
-        lessonType,
+        // lessonType, // Removed
         date,
         startTime: time, // Backend expects startTime
         duration, // Send integer minutes

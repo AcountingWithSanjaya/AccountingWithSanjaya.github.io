@@ -1295,7 +1295,7 @@ def load_teacher():
     recordings_data_full = load_json(RECORDINGS_FILE) # Expected: {"recordings": [...]}
     papers_data_full = load_json(PAPERS_FILE) # Expected: {"papers": [...]}
     courses_data_full = load_json(COURSES_FILE) # Expected: {"courses": [...]}
-    lesson_types_data_full = load_json(LESSON_TYPES_FILE) # Expected: {"lesson_types": [...]}
+    # lesson_types_data_full = load_json(LESSON_TYPES_FILE) # No longer needed for this response
 
     all_users = load_json(USERS_FILE)
     
@@ -1303,7 +1303,7 @@ def load_teacher():
     recordings_list = recordings_data_full.get('recordings', [])
     papers_list = papers_data_full.get('papers', [])
     courses_list = courses_data_full.get('courses', [])
-    lesson_types_list = lesson_types_data_full.get('lesson_types', [])
+    # lesson_types_list = lesson_types_data_full.get('lesson_types', []) # No longer needed for this response
 
     # Calculate stats
     pending_recordings = sum(1 for rec in recordings_list if rec.get('status') == 'pending')
@@ -1352,8 +1352,8 @@ def load_teacher():
             "past": sorted(past_classes_list, key=lambda x: (x.get('date', ''), x.get('time', '')), reverse=True)
         },
         "papers": papers_list,
-        "courses": courses_list, # Provide the list of courses
-        "lessonTypes": lesson_types_list # Provide the list of lesson types
+        "courses": courses_list # Provide the list of courses
+        # "lessonTypes": lesson_types_list # No longer sending lesson types
     })
 
 @app.route('/upload/recording', methods=['POST'])
@@ -1521,12 +1521,12 @@ def teacher_schedule_class():
         description = form_data.get('description', '')
         room = form_data.get('room', 'Online') 
         class_grade = form_data.get('grade', 'Any Grade')
-        lesson_type = form_data.get('lessonType', 'Lecture') # Added lessonType
+        # lesson_type = form_data.get('lessonType', 'Lecture') # Removed lessonType
         default_zoom_link = f"https://zoom.us/j/example{int(datetime.now().timestamp())}"
         zoom_link = form_data.get('zoomLink', default_zoom_link)
 
-        if not all([title, course_name, lesson_type, class_date_str, start_time_str]):
-            return jsonify({"message": "Missing required fields (title, course, lesson type, date, time)"}), 400
+        if not all([title, course_name, class_date_str, start_time_str]): # Removed lesson_type from check
+            return jsonify({"message": "Missing required fields (title, course, date, time)"}), 400
 
         class_start_datetime = datetime.strptime(f"{class_date_str} {start_time_str}", "%Y-%m-%d %H:%M")
         class_end_datetime = class_start_datetime + timedelta(minutes=duration_minutes)
@@ -1542,7 +1542,7 @@ def teacher_schedule_class():
             "title": title,
             "instructor": "Mr. Sanjaya", 
             "course": course_name,
-            "lessonType": lesson_type, # Added lessonType
+            # "lessonType": lesson_type, # Removed lessonType
             "date": class_date_str,
             "time": start_time_str, 
             "startTime": start_time_str, 
