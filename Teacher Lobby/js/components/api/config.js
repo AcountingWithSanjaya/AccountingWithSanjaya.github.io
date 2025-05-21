@@ -21,13 +21,14 @@ export const getAuthHeaders = (isFormData = false) => {
   // For FormData, the browser sets Content-Type automatically with boundary.
   
   if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (email) headers['X-User-Email'] = email; // Add email as a custom header for DELETE route
+
   // Email might be sent in body or as a query param depending on GET/POST
   // Or included if endpoint specifically needs it in header (X-User-Email was an example)
   // For POST requests, it's better to include email in the JSON body.
   // For FormData, include it as a form field.
   console.log('[API Config] Auth headers generated:', headers);
   return headers;
-  // Remove extra closing brace here: };
 };
 
 export const checkTeacherAuth = async () => {
@@ -218,6 +219,41 @@ export const updateScheduledClass = async (classId, classDetails) => {
     return result;
   } catch (error) {
     console.error('[API Config] Error updating class:', error);
+    throw error;
+  }
+};
+
+export const deleteScheduledClass = async (classId) => {
+  console.log('[API Config] deleteScheduledClass called. ID:', classId);
+  const email = localStorage.getItem('userEmail');
+  const token = localStorage.getItem('authToken');
+
+  if (!email || !token) {
+    console.error('[API Config] Authentication details not found for deleting class.');
+    throw new Error("Authentication details not found for deleting class.");
+  }
+
+  // Backend expects auth details in the body for consistency, even for DELETE if not using URL params for auth
+  // Or, if using a more RESTful DELETE, auth would be purely via headers and classId in URL.
+  // For this setup, let's send auth in body as other POSTs do, or adjust backend to take classId in URL and auth from headers.
+  // Let's assume backend will take classId in URL and use headers for auth for DELETE.
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/teacher/delete-class/${classId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(), // Auth token will be in here
+      // No body needed if classId is in URL and auth is header-based
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to delete class and could not parse error response.' }));
+      console.error('[API Config] Failed to delete class:', errorData.message);
+      throw new Error(errorData.message || 'Failed to delete class');
+    }
+    const result = await response.json(); // Should return { message: "..." }
+    console.log('[API Config] Class deleted successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('[API Config] Error deleting class:', error);
     throw error;
   }
 };

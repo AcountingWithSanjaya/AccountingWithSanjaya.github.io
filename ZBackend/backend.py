@@ -1642,6 +1642,46 @@ def teacher_update_class():
         print(f"Error updating class: {e}")
         return jsonify({"message": "An error occurred while updating class"}), 500
 
+@app.route('/teacher/delete-class/<class_id_to_delete>', methods=['DELETE'])
+def teacher_delete_class(class_id_to_delete):
+    auth_header = request.headers.get('Authorization')
+    token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
+    
+    # For DELETE, it's common to get email from a custom header or a query param if not embedded in token
+    # Or, if your verify_token can find email from token (if token stores user_id/email securely)
+    # For now, let's assume a custom header or that verify_token can work with just the token
+    # If email is strictly needed by verify_token, client must send it (e.g. X-User-Email header)
+    # Let's try to get email from a header if available, or assume verify_token might not need it if token is self-contained
+    
+    # Simplification: Assume verify_token needs email, and client sends it via X-User-Email
+    # This is not ideal for DELETE, but aligns with other auth patterns in this app.
+    # A better way: JWTs that contain user email/ID.
+    original_auth_email = request.headers.get('X-User-Email') # Client needs to add this header
+
+    if not original_auth_email or not token:
+        return jsonify({"message": "Missing credentials for deleting class (email header or token)"}), 400
+
+    is_teacher = (original_auth_email.lower() in TEACHER_EMAILS)
+    if not is_teacher or not verify_token(original_auth_email, token):
+        return jsonify({"message": "Unauthorized to delete class"}), 401
+
+    try:
+        all_classes_data = load_json(CLASSES_FILE)
+        classes_list = all_classes_data.get('classes', [])
+        
+        original_length = len(classes_list)
+        classes_list = [cls for cls in classes_list if cls.get('id') != class_id_to_delete]
+        
+        if len(classes_list) == original_length:
+            return jsonify({"message": "Class ID not found"}), 404
+
+        save_json(CLASSES_FILE, {"classes": classes_list})
+        print(f"Class deleted: {class_id_to_delete} by {original_auth_email}")
+        return jsonify({"message": "Class deleted successfully"}), 200
+    except Exception as e:
+        print(f"Error deleting class {class_id_to_delete}: {e}")
+        return jsonify({"message": "An error occurred while deleting class"}), 500
+
 # Teacher Panel Backend Logic - END
 
 if __name__ == '__main__':

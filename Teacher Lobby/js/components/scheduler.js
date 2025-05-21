@@ -2,7 +2,7 @@
  * Scheduler component
  * Handles the class scheduling functionality
  */
-import { scheduleNewClass, updateScheduledClass } from './api/config.js';
+import { scheduleNewClass, updateScheduledClass, deleteScheduledClass } from './api/config.js';
 
 /**
  * Scheduler component
@@ -335,13 +335,46 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
       editButton.addEventListener('click', () => handleEditClass(cls.id));
     }
     
-    // Add event listener for cancel class button (optional, if you implement class cancellation)
-    // const cancelClassButton = card.querySelector('.cancel-btn');
-    // if (cancelClassButton) {
-    //   cancelClassButton.addEventListener('click', () => handleCancelClass(cls.id));
-    // }
+    // Add event listener for cancel class button
+    const cancelClassButton = card.querySelector('.cancel-btn');
+    if (cancelClassButton) {
+      cancelClassButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent card click or other parent events
+        handleCancelClass(cls.id);
+      });
+    }
 
     return card;
+  };
+
+  const handleCancelClass = async (classId) => {
+    console.log('[Scheduler] Cancel Class button clicked for class ID:', classId);
+    
+    const classToCancel = classesData.upcoming.find(c => c.id === classId) || classesData.past.find(c => c.id === classId);
+    if (!classToCancel) {
+      alert('Error: Class not found.');
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete the class "${classToCancel.title}"? This action cannot be undone.`)) {
+      try {
+        const result = await deleteScheduledClass(classId); // API call
+        console.log('[Scheduler] Class deletion API call successful. Result:', result);
+
+        // Remove class from local data
+        classesData.upcoming = classesData.upcoming.filter(c => c.id !== classId);
+        classesData.past = classesData.past.filter(c => c.id !== classId);
+
+        renderCalendar(); // Update calendar dots
+        renderClasses();  // Re-render class lists
+        
+        alert(result.message || 'Class deleted successfully!');
+
+      } catch (error) {
+        console.error('[Scheduler] Failed to delete class:', error);
+        alert(`Error deleting class: ${error.message}`);
+      }
+    }
   };
 
   const handleEditClass = (classId) => {
