@@ -8,8 +8,8 @@ import { scheduleNewClass } from './api/config.js';
  * Scheduler component
  * Handles the class scheduling functionality
  */
-export function initScheduler(classesData, coursesData) { // Added coursesData
-  console.log('[Scheduler] Initializing with classesData:', classesData, 'and coursesData:', coursesData);
+export function initScheduler(classesData, coursesData, lessonTypesData) { // Added coursesData and lessonTypesData
+  console.log('[Scheduler] Initializing with classesData:', classesData, 'coursesData:', coursesData, 'lessonTypesData:', lessonTypesData);
   // DOM elements
   const calendarGrid = document.getElementById('calendar-grid');
   const currentMonthEl = document.getElementById('current-month');
@@ -17,7 +17,8 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
   const nextMonthBtn = document.getElementById('next-month');
   const scheduleForm = document.getElementById('schedule-form');
   const classDateInput = document.getElementById('class-date');
-  const classCourseSelect = document.getElementById('class-course'); // Added course select
+  const classCourseSelect = document.getElementById('class-course');
+  const classLessonTypeSelect = document.getElementById('class-lesson-type'); // Added lesson type select
   
   const upcomingClassesContainer = document.getElementById('upcoming-classes');
   const pastClassesContainer = document.getElementById('past-classes');
@@ -42,10 +43,27 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
     });
   };
 
+  // Populate lesson type dropdown
+  const populateLessonTypesDropdown = () => {
+    if (!classLessonTypeSelect || !lessonTypesData) {
+        console.warn('[Scheduler] Lesson type select or data not available for populating.');
+        if (classLessonTypeSelect) classLessonTypeSelect.innerHTML = '<option value="">No lesson types loaded</option>';
+        return;
+    }
+    classLessonTypeSelect.innerHTML = '<option value="">Select a lesson type</option>'; // Reset
+    lessonTypesData.forEach(type => {
+      const option = document.createElement('option');
+      option.value = type.id; // Use lesson type ID as value (e.g., "lecture")
+      option.textContent = type.name; // Display lesson type name (e.g., "Lecture")
+      classLessonTypeSelect.appendChild(option);
+    });
+  };
+
   // Initialize the calendar
   const initCalendar = () => {
     console.log('[Scheduler] initCalendar called.');
-    populateCoursesDropdown(); // Populate courses first
+    populateCoursesDropdown(); 
+    populateLessonTypesDropdown(); // Populate lesson types
     updateCalendarHeader();
     renderCalendar();
     renderClasses(); // classesData is passed in initScheduler

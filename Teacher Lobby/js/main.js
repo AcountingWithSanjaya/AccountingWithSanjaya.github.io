@@ -47,7 +47,7 @@ console.log('[Main] All modules imported successfully.');
     console.log('[Main] Initializing recordings component...');
     initRecordings(teacherData.recordings, teacherData.courses); // Pass courses for the dropdown in modal
     console.log('[Main] Initializing scheduler component...');
-    initScheduler(teacherData.classes, teacherData.courses); // Pass courses for the dropdown
+    initScheduler(teacherData.classes, teacherData.courses, teacherData.lessonTypes); // Pass courses and lesson types
     console.log('[Main] Initializing papers component...');
     initPapers(teacherData.papers, teacherData.courses); // Pass courses for the dropdown
 

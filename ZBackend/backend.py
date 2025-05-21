@@ -27,6 +27,7 @@ CLASSES_FILE = 'classes.json' # Assuming this is in ZBackend/
 PAPERS_FILE = 'papers.json' # Assuming this is in ZBackend/
 RECORDINGS_FILE = 'recordings.json' # Assuming this is in ZBackend/
 COURSES_FILE = 'courses.json' # Assuming this is in ZBackend/
+LESSON_TYPES_FILE = 'lesson_types.json' # Assuming this is in ZBackend/
 # MUSIC_FILE = 'music.json' # Not used in this request
 
 TEACHER_EMAILS = ['ssjayasundara@yahoo.com', 'omareeto2012@hotmail.com']
@@ -68,7 +69,8 @@ def load_json(file):
         if file == CLASSES_FILE: return {"classes": []}
         if file == PAPERS_FILE: return {"papers": []}
         if file == RECORDINGS_FILE: return {"recordings": []}
-        if file == COURSES_FILE: return {"courses": []} # Added for courses.json
+        if file == COURSES_FILE: return {"courses": []} 
+        if file == LESSON_TYPES_FILE: return {"lesson_types": []}
         return {}
 
 def save_json(file, data):
@@ -1293,6 +1295,7 @@ def load_teacher():
     recordings_data_full = load_json(RECORDINGS_FILE) # Expected: {"recordings": [...]}
     papers_data_full = load_json(PAPERS_FILE) # Expected: {"papers": [...]}
     courses_data_full = load_json(COURSES_FILE) # Expected: {"courses": [...]}
+    lesson_types_data_full = load_json(LESSON_TYPES_FILE) # Expected: {"lesson_types": [...]}
 
     all_users = load_json(USERS_FILE)
     
@@ -1300,6 +1303,7 @@ def load_teacher():
     recordings_list = recordings_data_full.get('recordings', [])
     papers_list = papers_data_full.get('papers', [])
     courses_list = courses_data_full.get('courses', [])
+    lesson_types_list = lesson_types_data_full.get('lesson_types', [])
 
     # Calculate stats
     pending_recordings = sum(1 for rec in recordings_list if rec.get('status') == 'pending')
@@ -1348,7 +1352,8 @@ def load_teacher():
             "past": sorted(past_classes_list, key=lambda x: (x.get('date', ''), x.get('time', '')), reverse=True)
         },
         "papers": papers_list,
-        "courses": courses_list # Provide the list of courses
+        "courses": courses_list, # Provide the list of courses
+        "lessonTypes": lesson_types_list # Provide the list of lesson types
     })
 
 @app.route('/upload/recording', methods=['POST'])
@@ -1574,6 +1579,21 @@ if __name__ == '__main__':
         save_json(PAPERS_FILE, {"papers": []})
     if not os.path.exists(RECORDINGS_FILE):
         save_json(RECORDINGS_FILE, {"recordings": []})
+    if not os.path.exists(LESSON_TYPES_FILE):
+        # Initialize with some default lesson types if none exist
+        default_lesson_types = {
+            "lesson_types": [
+                { "id": "lecture", "name": "Lecture" },
+                { "id": "tutorial", "name": "Tutorial" },
+                { "id": "workshop", "name": "Workshop" },
+                { "id": "revision", "name": "Revision Class" },
+                { "id": "lab", "name": "Lab Session" },
+                { "id": "seminar", "name": "Seminar" },
+                { "id": "qa_session", "name": "Q&A Session" },
+                { "id": "other", "name": "Other" }
+            ]
+        }
+        save_json(LESSON_TYPES_FILE, default_lesson_types)
     if not os.path.exists(COURSES_FILE):
         # Initialize with some default courses if none exist
         default_courses = {
