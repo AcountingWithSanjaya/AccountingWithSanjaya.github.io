@@ -15,7 +15,8 @@ from datetime import datetime
 import hashlib
 import uuid
 app = Flask(__name__)
-CORS(app)
+# More specific CORS configuration for development
+CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:5500", "http://localhost:5500"]}}, supports_credentials=True)
 load_dotenv()
 intents = discord.Intents.default()
 intents.messages = True
