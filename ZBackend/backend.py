@@ -1577,9 +1577,14 @@ def teacher_update_class():
     # it means Flask-CORS did not fully handle the preflight,
     # or this is the actual POST request after a successful preflight.
     # Standard behavior is for Flask-CORS to handle the preflight.
+    # It should respond with a 2xx and appropriate CORS headers for OPTIONS.
+    if request.method == 'OPTIONS':
+        # This response will likely be overridden by Flask-CORS with actual CORS headers.
+        # The main point is to not proceed to body processing logic.
+        return jsonify({"message": "OPTIONS preflight successful"}), 200
 
     # If it's a POST request, it will proceed.
-    form_data = request.json
+    form_data = request.json # This will only be called for POST now
     
     original_auth_email = form_data.get('auth_email')
     auth_token = form_data.get('auth_token')
@@ -1652,8 +1657,12 @@ def teacher_update_class():
         print(f"Error updating class: {e}")
         return jsonify({"message": "An error occurred while updating class"}), 500
 
-@app.route('/teacher/delete-class/<class_id_to_delete>', methods=['DELETE'])
+@app.route('/teacher/delete-class/<class_id_to_delete>', methods=['DELETE', 'OPTIONS']) # Added OPTIONS
 def teacher_delete_class(class_id_to_delete):
+    if request.method == 'OPTIONS':
+        # Flask-CORS should handle this and respond with appropriate headers.
+        return jsonify({"message": "OPTIONS preflight successful"}), 200
+
     auth_header = request.headers.get('Authorization')
     token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
     
