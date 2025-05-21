@@ -332,7 +332,10 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
     // Add event listener for edit button
     const editButton = card.querySelector('.edit-btn');
     if (editButton) {
-      editButton.addEventListener('click', () => handleEditClass(cls.id));
+      editButton.addEventListener('click', () => {
+        console.log(`[Scheduler] Edit button pressed for class ID: ${cls.id}. Calling handleEditClass...`);
+        handleEditClass(cls.id);
+      });
     }
     
     // Add event listener for cancel class button
@@ -340,6 +343,7 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
     if (cancelClassButton) {
       cancelClassButton.addEventListener('click', (e) => {
         e.stopPropagation(); // Prevent card click or other parent events
+        console.log(`[Scheduler] Cancel Class button pressed for class ID: ${cls.id}. Calling handleCancelClass...`);
         handleCancelClass(cls.id);
       });
     }
