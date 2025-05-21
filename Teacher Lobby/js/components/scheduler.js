@@ -2,7 +2,7 @@
  * Scheduler component
  * Handles the class scheduling functionality
  */
-import { scheduleNewClass } from './api/config.js';
+import { scheduleNewClass, updateScheduledClass } from './api/config.js';
 
 /**
  * Scheduler component
@@ -16,8 +16,15 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
   const prevMonthBtn = document.getElementById('prev-month');
   const nextMonthBtn = document.getElementById('next-month');
   const scheduleForm = document.getElementById('schedule-form');
-  const classDateInput = document.getElementById('class-date');
+  const classIdEditingInput = document.getElementById('class-id-editing');
+  const classTitleInput = document.getElementById('class-title');
   const classCourseSelect = document.getElementById('class-course');
+  const classDateInput = document.getElementById('class-date');
+  const classTimeInput = document.getElementById('class-time');
+  const classDurationInput = document.getElementById('class-duration');
+  const classDescriptionInput = document.getElementById('class-description');
+  const scheduleSubmitBtn = document.getElementById('schedule-submit-btn');
+  const cancelEditBtn = document.getElementById('cancel-edit-btn');
   // const classLessonTypeSelect = document.getElementById('class-lesson-type'); // Removed
   
   const upcomingClassesContainer = document.getElementById('upcoming-classes');
@@ -298,7 +305,7 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
         </div>
         <div class="class-detail">
           <i class="fas fa-clock"></i>
-          <span>${cls.duration} minutes</span>
+          <span>${cls.duration}</span> 
         </div>
         <div class="class-detail">
           <i class="fas fa-users"></i>
@@ -308,22 +315,80 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
       ${cls.description ? `<p class="class-description">${cls.description}</p>` : ''}
       <div class="class-actions">
         ${type === 'upcoming' ? `
-          <button class="class-btn edit-btn">
+          <button class="class-btn edit-btn" data-class-id="${cls.id}">
             <i class="fas fa-edit"></i> Edit
           </button>
-          <button class="class-btn cancel-btn">
-            <i class="fas fa-times"></i> Cancel
+          <button class="class-btn cancel-btn" data-class-id="${cls.id}">
+            <i class="fas fa-times"></i> Cancel Class
           </button>
         ` : `
-          <button class="class-btn edit-btn">
+          <button class="class-btn details-btn" data-class-id="${cls.id}">
             <i class="fas fa-file-alt"></i> Details
           </button>
         `}
       </div>
     `;
+
+    // Add event listener for edit button
+    const editButton = card.querySelector('.edit-btn');
+    if (editButton) {
+      editButton.addEventListener('click', () => handleEditClass(cls.id));
+    }
     
+    // Add event listener for cancel class button (optional, if you implement class cancellation)
+    // const cancelClassButton = card.querySelector('.cancel-btn');
+    // if (cancelClassButton) {
+    //   cancelClassButton.addEventListener('click', () => handleCancelClass(cls.id));
+    // }
+
     return card;
   };
+
+  const handleEditClass = (classId) => {
+    console.log('[Scheduler] Edit button clicked for class ID:', classId);
+    const classToEdit = classesData.upcoming.find(c => c.id === classId) || classesData.past.find(c => c.id === classId);
+
+    if (classToEdit) {
+      classIdEditingInput.value = classToEdit.id;
+      classTitleInput.value = classToEdit.title;
+      
+      // Set course
+      const courseOption = Array.from(classCourseSelect.options).find(opt => opt.text === classToEdit.course);
+      if (courseOption) {
+        classCourseSelect.value = courseOption.value;
+      } else {
+        classCourseSelect.value = ''; // Or handle if course not found
+      }
+      
+      classDateInput.value = classToEdit.date;
+      classTimeInput.value = classToEdit.startTime || classToEdit.time; // Use startTime if available
+      classDurationInput.value = parseInt(classToEdit.duration) || 60; // Extract number from "60 mins"
+      classDescriptionInput.value = classToEdit.description || '';
+
+      scheduleSubmitBtn.innerHTML = '<i class="fas fa-save"></i> Update Class';
+      cancelEditBtn.classList.remove('hidden');
+      
+      // Scroll to form for better UX
+      scheduleForm.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      console.error('[Scheduler] Class to edit not found with ID:', classId);
+      alert('Error: Could not find class details to edit.');
+    }
+  };
+
+  const resetScheduleForm = () => {
+    scheduleForm.reset();
+    classIdEditingInput.value = '';
+    scheduleSubmitBtn.innerHTML = '<i class="fas fa-calendar-plus"></i> Schedule Class';
+    cancelEditBtn.classList.add('hidden');
+    // Reset selected date on calendar if needed, or clear specific fields
+    classDateInput.value = selectedDate.toISOString().split('T')[0]; // Reset to currently selected calendar date
+  };
+
+  cancelEditBtn.addEventListener('click', () => {
+    console.log('[Scheduler] Cancel edit button clicked.');
+    resetScheduleForm();
+  });
   
   // Tab switching
   tabButtons.forEach(button => {
@@ -347,71 +412,86 @@ export function initScheduler(classesData, coursesData, lessonTypesData) { // Ad
   });
   
   // Schedule form submission
-  scheduleForm.addEventListener('submit', (e) => {
+  scheduleForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     console.log('[Scheduler] Schedule form submitted.');
     
+    const editingId = classIdEditingInput.value;
     // Get form values
-    const title = document.getElementById('class-title').value.trim();
-    const courseSelect = document.getElementById('class-course');
-    const courseName = courseSelect.options[courseSelect.selectedIndex].text; // Get the text of the selected option
-    const courseId = courseSelect.value; // Get the ID of the selected option (if you store courses by ID)
-    // const lessonType = document.getElementById('class-lesson-type').value; // Removed
-    const date = document.getElementById('class-date').value;
-    const time = document.getElementById('class-time').value; // HH:MM (24-hour)
-    const duration = parseInt(document.getElementById('class-duration').value, 10);
-    const description = document.getElementById('class-description').value.trim();
-    const room = 'Online'; // Default or make it a form field
+    const title = classTitleInput.value.trim();
+    const courseSelect = document.getElementById('class-course'); // Re-fetch to ensure it's current
+    const courseName = courseSelect.options[courseSelect.selectedIndex].text;
+    const courseId = courseSelect.value; 
+    const date = classDateInput.value;
+    const time = classTimeInput.value;
+    const duration = parseInt(classDurationInput.value, 10);
+    const description = classDescriptionInput.value.trim();
+    const room = 'Online';
 
     if (!title || !courseId || !date || !time || !duration) {
         alert('Please fill in all required fields for the class.');
         return;
     }
 
-    const classDetails = {
+    const classDetailsPayload = {
         title,
-        course: courseName, // Send course name
-        // courseId: courseId, // Optionally send course ID if backend uses it
-        // lessonType, // Removed
+        course: courseName,
         date,
-        startTime: time, // Backend expects startTime
-        duration, // Send integer minutes
+        startTime: time,
+        duration, 
         description,
-        room
-        // Backend will calculate endTime, generate ID, set instructor, etc.
+        room,
+        // grade: 'Any Grade' // Add if grade is part of the form and needs to be sent
+        // zoomLink: '...' // Add if zoomLink is part of the form
     };
-    console.log('[Scheduler] Scheduling new class with details:', classDetails);
 
-    scheduleNewClass(classDetails)
-        .then(result => {
-            console.log('[Scheduler] Class scheduled successfully via API. Result:', result);
-            // Add the newly scheduled class (returned from backend) to the local upcoming classes list
-            if (classesData && classesData.upcoming && result.class) {
-                 // Ensure the backend returns a class object that matches frontend structure or adapt here
-                const newClassFromBackend = {
-                    ...result.class, // Spread the properties from backend
-                    // Frontend might expect duration as number, studentsEnrolled, etc.
-                    // Ensure structure consistency or adapt here. For now, assume backend returns a compatible structure.
-                    // For example, backend returns "duration": "90 mins", scheduler.js might prefer number 90
-                    // For now, let's assume result.class matches the structure needed by createClassCard
-                     duration: parseInt(result.class.duration), // If backend sends "90 mins" string
-                     studentsEnrolled: result.class.studentsEnrolled || 0
-                };
-                console.log('[Scheduler] Adding new class to local data:', newClassFromBackend);
-                classesData.upcoming.push(newClassFromBackend);
+    try {
+      let result;
+      if (editingId) {
+        console.log('[Scheduler] Updating existing class with ID:', editingId, 'Details:', classDetailsPayload);
+        // Import updateScheduledClass from api/config.js if not already done
+        // For now, assuming it's available or will be added.
+        // result = await updateScheduledClass(editingId, classDetailsPayload); // This function needs to be created in api/config.js
+        
+        // Placeholder for the actual API call - this will be replaced once updateScheduledClass is in api/config.js
+        console.log('[Scheduler] Updating existing class with ID:', editingId, 'Details:', classDetailsPayload);
+        result = await updateScheduledClass(editingId, classDetailsPayload); // Actual API call
+        console.log('[Scheduler] Class update API call successful. Result:', result);
+        
+        // Update local data
+        const classIndex = classesData.upcoming.findIndex(c => c.id === editingId);
+        if (classIndex !== -1 && result.class) {
+            classesData.upcoming[classIndex] = result.class; // Update with data from backend
+        } else {
+            // Also check past classes if the class being edited could be there
+            const pastClassIndex = classesData.past.findIndex(c => c.id === editingId);
+            if (pastClassIndex !== -1 && result.class) {
+                classesData.past[pastClassIndex] = result.class;
+            } else if (result.class) { // If not found, but backend returned a class, it's an issue or new logic needed
+                console.warn("[Scheduler] Updated class not found in local upcoming/past lists, but backend returned data. Re-fetching or adding might be needed.");
+                // Potentially add to upcoming if it became upcoming, or handle as error.
+                // For now, we assume it was found or this is an edge case.
             }
-            
-            // Re-render calendar (to show event dot) and classes list
-            renderCalendar(); // Might need to re-fetch or update classesData if not done above
-            renderClasses(); // This uses the modified classesData.upcoming
-            
-            scheduleForm.reset();
-            alert('Class scheduled successfully!');
-        })
-        .catch(error => {
-            console.error('[Scheduler] Failed to schedule class:', error);
-            alert(`Error scheduling class: ${error.message}`);
-        });
+        }
+      } else {
+        console.log('[Scheduler] Scheduling new class with details:', classDetailsPayload);
+        result = await scheduleNewClass(classDetailsPayload);
+        console.log('[Scheduler] Class scheduled successfully via API. Result:', result);
+        if (classesData && classesData.upcoming && result.class) {
+            classesData.upcoming.push(result.class); // Add new class to local data
+        }
+      }
+
+      // Common success logic
+      renderCalendar(); // Re-render calendar to update event dots
+      renderClasses();  // Re-render class lists with updated data
+      resetScheduleForm(); // Reset form fields and buttons
+      alert(result.message || (editingId ? 'Class updated successfully!' : 'Class scheduled successfully!'));
+
+    } catch (error) {
+      console.error(`[Scheduler] Failed to ${editingId ? 'update' : 'schedule'} class:`, error);
+      alert(`Error ${editingId ? 'updating' : 'scheduling'} class: ${error.message}`);
+    }
   });
   
   // Initialize the component

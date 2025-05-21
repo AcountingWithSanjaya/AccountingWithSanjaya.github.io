@@ -1567,6 +1567,81 @@ def teacher_schedule_class():
         print(f"Error scheduling class: {e}")
         return jsonify({"message": "An error occurred while scheduling class"}), 500
 
+@app.route('/teacher/update-class', methods=['POST'])
+def teacher_update_class():
+    form_data = request.json
+    
+    original_auth_email = form_data.get('auth_email')
+    auth_token = form_data.get('auth_token')
+    class_id_to_update = form_data.get('classId')
+
+    if not original_auth_email or not auth_token or not class_id_to_update:
+        return jsonify({"message": "Missing credentials or class ID for updating class"}), 400
+
+    is_teacher = (original_auth_email.lower() in TEACHER_EMAILS)
+    if not is_teacher or not verify_token(original_auth_email, auth_token):
+        return jsonify({"message": "Unauthorized to update class"}), 401
+
+    try:
+        title = form_data.get('title')
+        course_name = form_data.get('course')
+        class_date_str = form_data.get('date')
+        start_time_str = form_data.get('startTime')
+        duration_minutes = int(form_data.get('duration', 60))
+        description = form_data.get('description', '')
+        room = form_data.get('room', 'Online')
+        # Optional fields, ensure they are handled if sent
+        class_grade = form_data.get('grade') # Keep existing if not provided
+        zoom_link = form_data.get('zoomLink') # Keep existing if not provided
+
+
+        if not all([title, course_name, class_date_str, start_time_str]):
+            return jsonify({"message": "Missing required fields (title, course, date, time)"}), 400
+
+        class_start_datetime = datetime.strptime(f"{class_date_str} {start_time_str}", "%Y-%m-%d %H:%M")
+        class_end_datetime = class_start_datetime + timedelta(minutes=duration_minutes)
+        end_time_str_formatted = class_end_datetime.strftime("%H:%M")
+
+        all_classes_data = load_json(CLASSES_FILE)
+        classes_list = all_classes_data.get('classes', [])
+        
+        class_found = False
+        updated_class_details = None
+        for i, cls in enumerate(classes_list):
+            if cls.get('id') == class_id_to_update:
+                # Update existing class details
+                classes_list[i]['title'] = title
+                classes_list[i]['course'] = course_name
+                classes_list[i]['date'] = class_date_str
+                classes_list[i]['time'] = start_time_str # Ensure 'time' is also updated
+                classes_list[i]['startTime'] = start_time_str
+                classes_list[i]['endTime'] = end_time_str_formatted
+                classes_list[i]['duration'] = f"{duration_minutes} mins"
+                classes_list[i]['description'] = description
+                classes_list[i]['room'] = room
+                if class_grade is not None: # Only update if provided
+                    classes_list[i]['grade'] = class_grade
+                if zoom_link is not None: # Only update if provided
+                    classes_list[i]['zoomLink'] = zoom_link
+                # Preserve other fields like instructor, spots, studentsEnrolled, studentsAttended
+                
+                updated_class_details = classes_list[i]
+                class_found = True
+                break
+        
+        if not class_found:
+            return jsonify({"message": "Class ID not found"}), 404
+
+        save_json(CLASSES_FILE, {"classes": classes_list})
+
+        return jsonify({"message": "Class updated successfully", "class": updated_class_details}), 200
+    except ValueError as ve:
+        print(f"ValueError updating class: {ve}")
+        return jsonify({"message": f"Invalid data format: {str(ve)}"}), 400
+    except Exception as e:
+        print(f"Error updating class: {e}")
+        return jsonify({"message": "An error occurred while updating class"}), 500
+
 # Teacher Panel Backend Logic - END
 
 if __name__ == '__main__':

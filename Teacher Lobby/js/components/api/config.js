@@ -184,6 +184,44 @@ export const uploadRecording = async (recordingId, file, metadata) => {
   }
 };
 
+export const updateScheduledClass = async (classId, classDetails) => {
+  console.log('[API Config] updateScheduledClass called. ID:', classId, 'Details:', classDetails);
+  const email = localStorage.getItem('userEmail');
+  const token = localStorage.getItem('authToken');
+
+  if (!email || !token) {
+    console.error('[API Config] Authentication details not found for updating class.');
+    throw new Error("Authentication details not found for updating class.");
+  }
+
+  const payload = {
+    ...classDetails,
+    classId: classId, // Include the classId in the payload
+    auth_email: email,
+    auth_token: token
+  };
+  console.log('[API Config] Updating class with payload:', payload);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/teacher/update-class`, { // New endpoint
+      method: 'POST', // Or PUT
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[API Config] Failed to update class:', errorData.message);
+      throw new Error(errorData.message || 'Failed to update class');
+    }
+    const result = await response.json(); // Should return { message: "...", class: { ... } }
+    console.log('[API Config] Class updated successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('[API Config] Error updating class:', error);
+    throw error;
+  }
+};
+
 export const uploadPaper = async (paperData, file) => {
   console.log('[API Config] uploadPaper called. Data:', paperData, 'File:', file.name);
   const email = localStorage.getItem('userEmail');

@@ -180,9 +180,15 @@
                     <label for="class-description">Description (Optional)</label>
                     <textarea id="class-description" class="form-textarea" rows="3" placeholder="Add details about this class"></textarea>
                   </div>
-                  <button type="submit" class="cta-button">
-                    <i class="fas fa-calendar-plus"></i> Schedule Class
-                  </button>
+                  <input type="hidden" id="class-id-editing">
+                  <div class="form-actions" style="display: flex; gap: 10px; margin-top: 1rem;">
+                    <button type="submit" class="cta-button" id="schedule-submit-btn">
+                      <i class="fas fa-calendar-plus"></i> Schedule Class
+                    </button>
+                    <button type="button" class="btn btn-outline hidden" id="cancel-edit-btn" style="padding: 0.5rem 1rem;">
+                        <i class="fas fa-times"></i> Cancel Edit
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
