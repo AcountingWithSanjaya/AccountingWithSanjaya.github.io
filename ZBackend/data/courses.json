@@ -1,0 +1,14 @@
+{
+    "1": {
+        "id": "1",
+        "teacher_id": "1",
+        "title": "Mathematics 101",
+        "description": "Introduction to Calculus"
+    },
+    "2": {
+        "id": "2",
+        "teacher_id": "1",
+        "title": "Physics 201",
+        "description": "Classical Mechanics"
+    }
+}

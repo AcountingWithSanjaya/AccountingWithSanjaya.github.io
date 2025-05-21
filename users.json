@@ -1,0 +1,13 @@
+{
+    "omareeto2012@hotmail.com": {
+        "username": "supa sibs",
+        "birthdate": "2011-05-14",
+        "grade": "Grade 12",
+        "password": "scrypt:32768:8:1$6gTVsxdMaZZjBmfK$a144f27166f6017e013fea87c5dd84d15c5addb3b24e48e979969f583e0ac868345bf1f859f6a2221bfd33edf64bff2d09a6cb010c17f25038e17400e2b66a19",
+        "profileImage": "",
+        "profileImageFileID": "",
+        "credits": 0,
+        "enrolled_classes": [],
+        "createdAt": "2025-05-16T10:51:01.463678"
+    }
+}

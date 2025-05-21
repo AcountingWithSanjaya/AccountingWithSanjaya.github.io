@@ -1,0 +1,20 @@
+{
+    "courses": [
+        {
+            "id": "course1",
+            "name": "Mathematics 101"
+        },
+        {
+            "id": "course2",
+            "name": "Physics 201"
+        },
+        {
+            "id": "course3",
+            "name": "Accounting Basics"
+        },
+        {
+            "id": "course4",
+            "name": "Advanced Business Studies"
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+{
+    "teacher@example.com": {
+        "id": "1",
+        "email": "teacher@example.com",
+        "name": "John Doe"
+    }
+}
