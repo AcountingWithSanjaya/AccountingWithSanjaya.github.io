@@ -1568,8 +1568,17 @@ def teacher_schedule_class():
         print(f"Error scheduling class: {e}")
         return jsonify({"message": "An error occurred while scheduling class"}), 500
 
-@app.route('/teacher/update-class', methods=['POST'])
+@app.route('/teacher/update-class', methods=['POST', 'OPTIONS']) # Added OPTIONS
 def teacher_update_class():
+    # For an OPTIONS request, Flask-CORS should intercept and handle it
+    # before this view function's body is executed, provided that
+    # 'OPTIONS' is listed in the methods for the route.
+    # If the request method is OPTIONS and it reaches here,
+    # it means Flask-CORS did not fully handle the preflight,
+    # or this is the actual POST request after a successful preflight.
+    # Standard behavior is for Flask-CORS to handle the preflight.
+
+    # If it's a POST request, it will proceed.
     form_data = request.json
     
     original_auth_email = form_data.get('auth_email')
