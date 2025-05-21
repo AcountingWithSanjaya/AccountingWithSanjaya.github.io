@@ -291,6 +291,10 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
           <span>${cls.course}</span>
         </div>
         <div class="class-detail">
+          <i class="fas fa-chalkboard-teacher"></i> <!-- Example icon for lesson type -->
+          <span>${cls.lessonType || 'N/A'}</span>
+        </div>
+        <div class="class-detail">
           <i class="fas fa-map-marker-alt"></i>
           <span>${cls.room}</span>
         </div>
@@ -354,14 +358,15 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
     const courseSelect = document.getElementById('class-course');
     const courseName = courseSelect.options[courseSelect.selectedIndex].text; // Get the text of the selected option
     const courseId = courseSelect.value; // Get the ID of the selected option (if you store courses by ID)
+    const lessonType = document.getElementById('class-lesson-type').value;
     const date = document.getElementById('class-date').value;
     const time = document.getElementById('class-time').value; // HH:MM (24-hour)
     const duration = parseInt(document.getElementById('class-duration').value, 10);
     const description = document.getElementById('class-description').value.trim();
     const room = 'Online'; // Default or make it a form field
 
-    if (!title || !courseId || !date || !time || !duration) {
-        alert('Please fill in all required fields for the class.');
+    if (!title || !courseId || !lessonType || !date || !time || !duration) {
+        alert('Please fill in all required fields for the class, including lesson type.');
         return;
     }
 
@@ -369,6 +374,7 @@ export function initScheduler(classesData, coursesData) { // Added coursesData
         title,
         course: courseName, // Send course name
         // courseId: courseId, // Optionally send course ID if backend uses it
+        lessonType,
         date,
         startTime: time, // Backend expects startTime
         duration, // Send integer minutes

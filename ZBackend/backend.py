@@ -1515,12 +1515,13 @@ def teacher_schedule_class():
         duration_minutes = int(form_data.get('duration', 60)) 
         description = form_data.get('description', '')
         room = form_data.get('room', 'Online') 
-        class_grade = form_data.get('grade', 'Any Grade') 
+        class_grade = form_data.get('grade', 'Any Grade')
+        lesson_type = form_data.get('lessonType', 'Lecture') # Added lessonType
         default_zoom_link = f"https://zoom.us/j/example{int(datetime.now().timestamp())}"
         zoom_link = form_data.get('zoomLink', default_zoom_link)
 
-        if not all([title, course_name, class_date_str, start_time_str]):
-            return jsonify({"message": "Missing required fields (title, course, date, time)"}), 400
+        if not all([title, course_name, lesson_type, class_date_str, start_time_str]):
+            return jsonify({"message": "Missing required fields (title, course, lesson type, date, time)"}), 400
 
         class_start_datetime = datetime.strptime(f"{class_date_str} {start_time_str}", "%Y-%m-%d %H:%M")
         class_end_datetime = class_start_datetime + timedelta(minutes=duration_minutes)
@@ -1535,7 +1536,8 @@ def teacher_schedule_class():
             "id": new_class_id,
             "title": title,
             "instructor": "Mr. Sanjaya", 
-            "course": course_name, 
+            "course": course_name,
+            "lessonType": lesson_type, # Added lessonType
             "date": class_date_str,
             "time": start_time_str, 
             "startTime": start_time_str, 
